@@ -54,7 +54,7 @@ class Epayco_agregador extends PaymentModule
         $this->name = 'epayco_agregador';
         $this->tab = 'payments_gateways';
         $this->version = '1.7.6';
-        $this->author = 'ePayco';
+        $this->author = 'Ricardo saldarriaga';
         $this->need_instance = 1;
 
         /**
@@ -69,7 +69,7 @@ class Epayco_agregador extends PaymentModule
 
         $this->confirmUninstall = $this->l('Esta seguro de desistalar este modulo?');
 
-        $this->limited_countries = array('FR','CO','USA','EUR');
+        $this->limited_countries = array('FR','CO','USA','EUR','US');
 
 
         $this->ps_versions_compliancy = array('min' => '1.6', 'max' => _PS_VERSION_);
