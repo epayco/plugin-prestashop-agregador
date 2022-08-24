@@ -9,6 +9,7 @@
 * [Instalación](#instalación)
 
 ## Versiones
+* [ePayco plugin OnPage_Checkout_PrestaShop v1.7.7](https://github.com/epayco/plugin-prestashop-agregador/releases/tag/v1.7.7).
 * [ePayco plugin OnPage_Checkout_PrestaShop v1.7.6](https://github.com/epayco/plugin-prestashop-agregador/releases/tag/v1.7.6.7).
 
 
