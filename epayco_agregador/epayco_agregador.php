@@ -847,8 +847,7 @@ class Epayco_agregador extends PaymentModule
             .$amount.'^'
             .$currency
         );
-        $x_approval_code = 1;
-        $x_cod_response = 1;
+
         $payment=false;
         if($textMode == "TRUE"){
             $state = 'PAYCO_OS_REJECTED_TEST';
