@@ -382,7 +382,7 @@ class Epayco_agregador extends PaymentModule
                         'type' => 'select',
                         'label' => $this->trans('Estado final Pedido', array(), 'Modules.Epayco_agregador.Admin'),
                         'name' => 'P_STATE_END_TRANSACTION_agregador',
-                        'desc' => $this->trans('Escoja el estado del pago que se aplicar al confirmar la trasacción.', array(), 'Modules.Payco.Admin'),
+                        'desc' => $this->trans('Escoja el estado del pago que se aplicar al confirmar la trasacción.', array(), 'Modules.Epayco_agregador.Admin'),
                         'required' => true,
                         'options' => array(
                               'id' => 'id',
@@ -960,7 +960,6 @@ class Epayco_agregador extends PaymentModule
 
             if ($current_state != Configuration::get($state))
             {
-                
                 if ($confirmation && !$payment && $x_cod_response != 3 && Epayco_agregadorOrder::ifStockDiscount($order->id)) {
                     if(!$validacionOrderName){
                         $this->RestoreStock($order, '+');
@@ -969,7 +968,6 @@ class Epayco_agregador extends PaymentModule
                         $history->changeIdOrderState((int)Configuration::get($state), $order, true);
                     }
                 }                
-                
                 
                 $history = new OrderHistory();
                 $history->id_order = (int)$order->id;
@@ -1005,7 +1003,7 @@ class Epayco_agregador extends PaymentModule
                             }
                         }
                     }
-                  $history->changeIdOrderState((int)$this->p_state_end_transaction_agregador, $order, true);
+                  $history->changeIdOrderState((int)$orderStatusEndId, $order, true);
                 }else{
                     if (($x_cod_response == 2
                             || $x_cod_response == 4
@@ -1013,13 +1011,16 @@ class Epayco_agregador extends PaymentModule
                             || $x_cod_response == 9
                             || $x_cod_response == 10
                             || $x_cod_response == 11
-                        ) && Epayco_agregadorOrder::ifStockDiscount($order->id)) {
+                        ) ) {
                         if ($current_state != Configuration::get($state)) {
-                            if(trim($x_cod_transaction_state) == 10){
-                				if(!$confirmation && !$validacionOrderName){
+
+                				if(!$confirmation ){
                                     $this->RestoreStock($order, '+');
                 				}
-                            }
+                				if(trim($x_cod_response) == 10){
+                				     $this->RestoreStock($order, '-');
+                				}
+                          
                             if($orderStatusPreName == "ePayco Esperando Pago"){
                                 $history->changeIdOrderState((int)Configuration::get($state), $order, true);
                                 $this->RestoreStock($order, '+');
@@ -1062,7 +1063,9 @@ class Epayco_agregador extends PaymentModule
                     }
                 }
                 if(!$keepOn){
-                    $history->changeIdOrderState((int)Configuration::get($state), $order, true);
+                    if($x_cod_response != 1){
+                        $history->changeIdOrderState((int)Configuration::get($state), $order, true);
+                    }
                 } 
             }
         }else{
