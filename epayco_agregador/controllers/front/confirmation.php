@@ -50,7 +50,8 @@ class Epayco_agregadorConfirmationModuleFrontController extends ModuleFrontContr
             $signature=trim($_REQUEST['x_signature']);
             $x_test_request=trim($_REQUEST['x_test_request']);
             $x_approval_code=trim($_REQUEST['x_approval_code']);
-            $payco->PaymentSuccess($extra1,$response,$referencia,$transid,$amount,$currency,$signature,"true",$x_test_request,$x_approval_code);
+            $x_franchise=trim($_REQUEST['x_franchise']);
+            $payco->PaymentSuccess($extra1,$response,$referencia,$transid,$amount,$currency,$signature,"true",$x_test_request,$x_approval_code,$x_franchise);
         } else {
             /*
              * An error occured and is shown on a new page.
