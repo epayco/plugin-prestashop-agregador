@@ -823,16 +823,16 @@ class Epayco_agregador extends PaymentModule
             $data = $jsonData['data'];
             $data["ref_payco"]=$ref_payco;
             $data["url"]=$url;
-            $this->Acentarpago($data["x_extra1"],$data["x_cod_response"],$data["x_ref_payco"],$data["x_transaction_id"],$data["x_amount"],$data["x_currency_code"],$data["x_signature"],$confirmation,$data["x_test_request"], $data["x_approval_code"]);
+            $this->Acentarpago($data["x_extra1"],$data["x_cod_response"],$data["x_ref_payco"],$data["x_transaction_id"],$data["x_amount"],$data["x_currency_code"],$data["x_signature"],$confirmation,$data["x_test_request"], $data["x_approval_code"],$data["x_franchise"]);
             $this->context->smarty->assign($data);
         }
     }
 
-    public function PaymentSuccess($extra1,$response,$referencia,$transid,$amount,$currency,$signature,$confirmation,$textMode,$x_approval_code) {
-      $this->Acentarpago($extra1,$response,$referencia,$transid,$amount,$currency,$signature,$confirmation,$textMode,$x_approval_code);
+    public function PaymentSuccess($extra1,$response,$referencia,$transid,$amount,$currency,$signature,$confirmation,$textMode,$x_approval_code,$x_franchise) {
+      $this->Acentarpago($extra1,$response,$referencia,$transid,$amount,$currency,$signature,$confirmation,$textMode,$x_approval_code,$x_franchise);
     }
 
-    private function Acentarpago($extra1,$response,$referencia,$transid,$amount,$currency,$signature,$confirmation,$textMode,$x_approval_code) {
+    private function Acentarpago($extra1,$response,$referencia,$transid,$amount,$currency,$signature,$confirmation,$textMode,$x_approval_code,$x_franchise) {
 
         $config = Configuration::getMultiple(array('P_CUST_ID_CLIENTE_agregador','P_KEY_agregador','PUBLIC_KEY_agregador','P_TEST_REQUEST_agregador','P_STATE_END_TRANSACTION_agregador'));  
         $x_cust_id_cliente=trim($config['P_CUST_ID_CLIENTE_agregador']);
@@ -957,7 +957,7 @@ class Epayco_agregador extends PaymentModule
                 Epayco_agregadorOrder::updateStockDiscount($order->id, 1);
             }
              
-
+            
             if ($current_state != Configuration::get($state))
             {
                 if ($confirmation && !$payment && $x_cod_response != 3 && Epayco_agregadorOrder::ifStockDiscount($order->id)) {
@@ -971,8 +971,8 @@ class Epayco_agregador extends PaymentModule
                 
                 $history = new OrderHistory();
                 $history->id_order = (int)$order->id;
-
-                if($payment && $validacionOrderName){
+                
+                if($payment && $validacionOrderName){               
                     $orderStatus = Db::getInstance()->executeS('
                         SELECT name FROM `' . _DB_PREFIX_ . 'order_state_lang`
                         WHERE `id_order_state` = ' . (int)$config['P_STATE_END_TRANSACTION_agregador']);
@@ -997,6 +997,7 @@ class Epayco_agregador extends PaymentModule
                             'SELECT * FROM `' . _DB_PREFIX_ . 'order_state_lang` 
                             WHERE `name` = "' . $orderStatusName . '"'
                         );
+                        
                         if($orderStatusEndId != $current_state){
                             if($orderStatusPreName != "ePayco Pago Pendiente Prueba"){
                                 $this->RestoreStock($order, '+'); 
@@ -1017,6 +1018,9 @@ class Epayco_agregador extends PaymentModule
                 				if(!$confirmation ){
                                     $this->RestoreStock($order, '+');
                 				}
+                				if($x_franchise == 'PSE'){
+                				    $this->RestoreStock($order, '+');
+                				}
                 				if(trim($x_cod_response) == 10){
                 				     $this->RestoreStock($order, '-');
                 				}
@@ -1027,7 +1031,7 @@ class Epayco_agregador extends PaymentModule
                             }
                         }
                     }
-
+                    
                     if(!$validacionOrderName){
                         if(!$test && $orderStatusPreName != "ePayco Pago Rechazado" || $orderStatusPreName != "ePayco Pago Cancelado" || $orderStatusPreName != "ePayco Pago Fallido"){
                             $keepOn = true;
@@ -1035,7 +1039,7 @@ class Epayco_agregador extends PaymentModule
                         if($test && $orderStatusPreName != "ePayco Pago Rechazado Prueba" || $orderStatusPreName != "ePayco Pago Cancelado Prueba" || $orderStatusPreName != "ePayco Pago Fallido Prueba" ){
                             $keepOn = true;
                         }
-                        
+
                         if($keepOn ){
                             if($x_cod_response == 1){
                                 $orderStatus = Db::getInstance()->executeS('
@@ -1050,10 +1054,14 @@ class Epayco_agregador extends PaymentModule
                                 $this->RestoreStock($order, '-'); 
                             }
                             if($textMode == "TRUE" && $x_cod_response != 1){
-                                $history->changeIdOrderState((int)$orderStatusEndId, $order, true); 
+                                $history->changeIdOrderState((int)Configuration::get($state), $order, true); 
+                                $this->RestoreStock($order, '-');
                             }else{
                                 if($x_cod_response != 1){
                                     $history->changeIdOrderState((int)Configuration::get($state), $order, true);
+                                    if($x_franchise == 'PSE'){
+                				        $this->RestoreStock($order, '-');
+                				    }
                                 } 
                             } 
                         }
