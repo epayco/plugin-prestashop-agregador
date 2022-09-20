@@ -814,7 +814,7 @@ class Epayco_agregador extends PaymentModule
             if(isset($_REQUEST["ref_payco"])){
                 $ref_payco=$_REQUEST["ref_payco"];
             }
-            $url = 'https://secure.epayco.io/validation/v1/reference/'.$ref_payco;
+            $url = 'https://secure.epayco.co/validation/v1/reference/'.$ref_payco;
         }
         if($ref_payco!="" and $url!=""){
             //Consultamos la transaccion en el servidor
@@ -1015,9 +1015,7 @@ class Epayco_agregador extends PaymentModule
                         ) ) {
                         if ($current_state != Configuration::get($state)) {
 
-                				if(!$confirmation ){
-                                    $this->RestoreStock($order, '+');
-                				}
+                				
                 				if($x_franchise == 'PSE'){
                 				    $this->RestoreStock($order, '+');
                 				}

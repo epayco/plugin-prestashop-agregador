@@ -33,7 +33,7 @@
 </p>
 
 <form id="epayco_form" style="text-align: center;">
-    <script src="https://epayco-checkout-testing.s3.amazonaws.com/checkout.preprod.js"
+    <script src="https://checkout.epayco.co/checkout.js"
         class="epayco-button"
         data-epayco-key="{$public_key_agregador|escape:'htmlall':'UTF-8'}"
         data-epayco-amount="{$total|escape:'htmlall':'UTF-8'}"
