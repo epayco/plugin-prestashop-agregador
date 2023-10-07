@@ -28,7 +28,7 @@
     <div class="loading"></div>
 </div>
 <p style="text-align: center;" class="epayco-title">
-    <span class="animated-points">Cargando metodos de pago agregador</span>
+    <span class="animated-points">Cargando métodos de pago</span>
    <br><small class="epayco-subtitle"> Si no se cargan automáticamente, de clic en el botón "Pagar con ePayco"</small>
 </p>
 <a id="btn_epayco" href="#">
@@ -53,7 +53,7 @@
             country: "{$iso|lower|escape:'htmlall':'UTF-8'}",
             lang: "{$lang|escape:'htmlall':'UTF-8'}",
             external: "{$external|escape:'htmlall':'UTF-8'}",
-            confirmation: "{$p_url_confirmation|unescape: 'html' nofilter}",
+            confirmation: "{$p_url_confirmation_agregador|unescape: 'html' nofilter}",
             response: "{$p_url_response_agregador|unescape: 'html' nofilter}",
             name_billing: "{$p_billing_name|escape:'htmlall':'UTF-8'} {$p_billing_last_name|escape:'htmlall':'UTF-8'}",
             address_billing: "{$p_billing_address|escape:'htmlall':'UTF-8'}",
@@ -71,11 +71,24 @@
     </script>
 </form>
 
-    {literal} 
-<script>
-    
+    <script language="Javascript">
+    const app = document.getElementById("epayco_form");
+    window.onload = function() {
+        document.addEventListener("contextmenu", function(e){
+        e.preventDefault();
+        }, false);
+    } 
 </script>
-    {/literal}
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script>
+    $(document).keydown(function (event) {
+        if (event.keyCode == 123) {
+            return false;
+        } else if (event.ctrlKey && event.shiftKey && event.keyCode == 73) {        
+            return false;
+        }
+    });
+</script>
 {else}
 <p class="warning">
   {l s='Hemos notado un problema con tu orden, si crees que es un error puedes contactar a nuestro departamento de Soporte' mod='epayco_agregador'}
