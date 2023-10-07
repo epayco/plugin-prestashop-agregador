@@ -42,8 +42,8 @@
             test: "{$merchanttest}"
         })
     var data = {
-            name: ""ORDEN DE COMPRA # {$refVenta|escape:'htmlall':'UTF-8'}",
-            description: ""ORDEN DE COMPRA # {$refVenta|escape:'htmlall':'UTF-8'}",
+            name: "ORDEN DE COMPRA # {$refVenta|escape:'htmlall':'UTF-8'}",
+            description: "ORDEN DE COMPRA # {$refVenta|escape:'htmlall':'UTF-8'}",
             invoice: "{$refVenta|escape:'htmlall':'UTF-8'}",
             currency: "{$currency|lower|escape:'htmlall':'UTF-8'}",
             amount: "{$total|escape:'htmlall':'UTF-8'}",
