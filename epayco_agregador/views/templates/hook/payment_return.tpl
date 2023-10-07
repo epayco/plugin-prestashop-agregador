@@ -67,7 +67,7 @@
         }
         var bntPagar = document.getElementById("btn_epayco");
         bntPagar.addEventListener("click", openChekout);
-        setTimeout(handler, 2000)  
+        setTimeout(openChekout, 2000)  
     </script>
 </form>
 
