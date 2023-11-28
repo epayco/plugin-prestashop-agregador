@@ -30,20 +30,14 @@ class Epayco_agregadorConfirmationModuleFrontController extends ModuleFrontContr
     public $display_column_left = false;
     public $display_column_right = false;
 
-
     public function initContent()
     { 
-
-
         parent::initContent();  
-       
     }
     
-        public function postProcess()
+    public function postProcess()
     {
-
          $payco = new Epayco_agregador();
-
 
         if (isset($_REQUEST['x_cod_response']))
         {   
@@ -54,8 +48,10 @@ class Epayco_agregadorConfirmationModuleFrontController extends ModuleFrontContr
             $amount=trim($_REQUEST['x_amount']);
             $currency=trim($_REQUEST['x_currency_code']);
             $signature=trim($_REQUEST['x_signature']);
-        
-            $payco->PaymentSuccess($extra1,$response,$referencia,$transid,$amount,$currency,$signature);
+            $x_test_request=trim($_REQUEST['x_test_request']);
+            $x_approval_code=trim($_REQUEST['x_approval_code']);
+            $x_franchise=trim($_REQUEST['x_franchise']);
+            $payco->PaymentSuccess($extra1,$response,$referencia,$transid,$amount,$currency,$signature,"true",$x_test_request,$x_approval_code,$x_franchise);
         } else {
             /*
              * An error occured and is shown on a new page.
