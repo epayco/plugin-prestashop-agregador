@@ -43,6 +43,7 @@ class Epayco_agregador extends PaymentModule
     public $p_cust_id_cliente_agregador;
     public $p_key_agregador;
     public $public_key_agregador;
+    public $private_key_agregador;
     public $p_test_request_agregador;
     public $p_type_checkout_agregador;
     public $p_url_response_agregador;
@@ -53,8 +54,8 @@ class Epayco_agregador extends PaymentModule
     {
         $this->name = 'epayco_agregador';
         $this->tab = 'payments_gateways';
-        $this->version = '1.7.6';
-        $this->author = 'Ricardo saldarriaga';
+        $this->version = '1.7.7';
+        $this->author = 'ePayco';
         $this->need_instance = 1;
 
         /**
@@ -75,7 +76,7 @@ class Epayco_agregador extends PaymentModule
         $this->ps_versions_compliancy = array('min' => '1.6', 'max' => _PS_VERSION_);
 
         $config = Configuration::getMultiple(array('P_CUST_ID_CLIENTE_agregador',
-                                                'P_KEY_agregador','PUBLIC_KEY_agregador',
+                                                'P_KEY_agregador','PUBLIC_KEY_agregador','PRIVATE_KEY_agregador',
                                                 'P_TEST_REQUEST_agregador',
                                                 'P_TITULO_agregador',
                                                 'P_URL_RESPONSE_agregador',
@@ -89,7 +90,9 @@ class Epayco_agregador extends PaymentModule
         if (isset($config['P_KEY_agregador']))
             $this->p_key_agregador = trim($config['P_KEY_agregador']);
         if (isset($config['PUBLIC_KEY_agregador']))
-            $this->public_key_agregador = trim($config['PUBLIC_KEY_agregador']);  
+            $this->public_key_agregador = trim($config['PUBLIC_KEY_agregador']);
+        if (isset($config['PRIVATE_KEY_agregador']))
+            $this->private_key_agregador = trim($config['PRIVATE_KEY_agregador']);      
         if (isset($config['P_TEST_REQUEST_agregador']))
             $this->p_test_request_agregador = $config['P_TEST_REQUEST_agregador'];
         if (isset($config['P_TITULO_agregador']))
@@ -107,8 +110,8 @@ class Epayco_agregador extends PaymentModule
         }else{
             $this->p_state_end_transaction_agregador = (int)Configuration::get('PS_OS_PAYMENT');
         }
-        if (!isset($this->p_cust_id_cliente_agregador) OR !isset($this->p_key_agregador) OR !isset($this->public_key_agregador))
-        $this->warning = $this->l('P_CUST_ID_CLIENTE_agregador, P_KEY_agregador y PUBLIC_KEY_agregador deben estar configurados para utilizar este módulo correctamente');
+        if (!isset($this->p_cust_id_cliente_agregador) OR !isset($this->p_key_agregador) OR !isset($this->public_key_agregador) OR !isset($this->private_key_agregador))
+        $this->warning = $this->l('P_CUST_ID_CLIENTE_agregador, P_KEY_agregador, PRIVATE_KEY_agregador y PUBLIC_KEY_agregador deben estar configurados para utilizar este módulo correctamente');
         if (!sizeof(Currency::checkPaymentCurrencies($this->id)))
         $this->warning = $this->l('No currency set for this module');
     }
@@ -137,6 +140,7 @@ class Epayco_agregador extends PaymentModule
         Configuration::updateValue('P_CUST_ID_CLIENTE_agregador', '');
         Configuration::updateValue('P_KEY_agregador', '');
         Configuration::updateValue('PUBLIC_KEY_agregador', '');
+        Configuration::updateValue('PRIVATE_KEY_agregador', '');
         Configuration::updateValue('P_TEST_REQUEST_agregador', false);
         Configuration::updateValue('P_REDUCE_STOCK_PENDING', true);  
         Configuration::updateValue('P_URL_RESPONSE_agregador', Context::getContext()->link->getModuleLink('epayco_agregador', 'response'));
@@ -173,6 +177,7 @@ class Epayco_agregador extends PaymentModule
         Configuration::deleteByName('P_CUST_ID_CLIENTE_agregador');
         Configuration::deleteByName('P_KEY_agregador');
         Configuration::deleteByName('PUBLIC_KEY_agregador');
+        Configuration::deleteByName('PRIVATE_KEY_agregador');
         Configuration::deleteByName('P_TEST_REQUEST_agregador');
         Configuration::deleteByName('P_URL_RESPONSE_agregador');
         Configuration::deleteByName('P_URL_CONFIRMATION_agregador');
@@ -305,6 +310,13 @@ class Epayco_agregador extends PaymentModule
                     ),
                     array(
                         'type' => 'text',
+                        'label' => $this->trans('PRIVATE_KEY', array(), 'Modules.Epayco_agregador.Admin'),
+                        'name' => 'PRIVATE_KEY_agregador',
+                        'desc' => $this->trans('LLave para autenticar y consumir los servicios de ePayco.', array(), 'Modules.Epayco_agregador.Admin'),
+                        'required' => true
+                    ),
+                    array(
+                        'type' => 'text',
                         'label' => $this->trans('Página de Respuesta', array(), 'Modules.Epayco_agregador.Admin'),
                         'name' => 'P_URL_RESPONSE_agregador',
                         'placeholder'=>"http://tutienda.com/respuesta",
@@ -411,6 +423,7 @@ class Epayco_agregador extends PaymentModule
             'P_CUST_ID_CLIENTE_agregador' => Tools::getValue('P_CUST_ID_CLIENTE_agregador', Configuration::get('P_CUST_ID_CLIENTE_agregador')),
             'P_KEY_agregador' => Tools::getValue('P_KEY_agregador', Configuration::get('P_KEY_agregador')),
             'PUBLIC_KEY_agregador' => Tools::getValue('PUBLIC_KEY_agregador', Configuration::get('PUBLIC_KEY_agregador')),
+            'PRIVATE_KEY_agregador' => Tools::getValue('PRIVATE_KEY_agregador', Configuration::get('PRIVATE_KEY_agregador')),
             'P_TEST_REQUEST_agregador' => Tools::getValue('P_TEST_REQUEST_agregador', Configuration::get('P_TEST_REQUEST_agregador')),
             'P_TYPE_CHECKOUT_agregador' => Tools::getValue('P_TYPE_CHECKOUT_agregador', Configuration::get('P_TYPE_CHECKOUT_agregador')),
             'P_URL_RESPONSE_agregador' => Tools::getValue('P_URL_RESPONSE_agregador', Configuration::get('P_URL_RESPONSE_agregador')),
@@ -427,7 +440,9 @@ class Epayco_agregador extends PaymentModule
         if (!Tools::getValue('P_KEY_agregador'))
           $this->_postErrors[] = $this->l('\'P_KEY_agregador\' Campo Requerido.');
         if (!Tools::getValue('PUBLIC_KEY_agregador'))
-          $this->_postErrors[] = $this->l('\'PUBLIC_KEY_agregador\' Campo Requerido.');      
+          $this->_postErrors[] = $this->l('\'PUBLIC_KEY_agregador\' Campo Requerido.');  
+        if (!Tools::getValue('PRIVATE_KEY_agregador'))
+          $this->_postErrors[] = $this->l('\'PRIVATE_KEY_agregador\' Campo Requerido.');        
         /*if (!Tools::getValue('P_TITULO'))
           $this->_postErrors[] = $this->l('\'P_TITULO\' Campo Requerido.');*/
         if (!Tools::getValue('P_STATE_END_TRANSACTION_agregador'))
@@ -465,6 +480,7 @@ class Epayco_agregador extends PaymentModule
             Configuration::updateValue('P_CUST_ID_CLIENTE_agregador', Tools::getValue('P_CUST_ID_CLIENTE_agregador'));
             Configuration::updateValue('P_KEY_agregador', Tools::getValue('P_KEY_agregador'));
             Configuration::updateValue('PUBLIC_KEY_agregador', Tools::getValue('PUBLIC_KEY_agregador'));
+            Configuration::updateValue('PRIVATE_KEY_agregador', Tools::getValue('PRIVATE_KEY_agregador'));
             Configuration::updateValue('P_TEST_REQUEST_agregador', Tools::getValue('P_TEST_REQUEST_agregador'));
             Configuration::updateValue('P_TITULO_agregador', $p_titulo_agregador);
             Configuration::updateValue('P_URL_RESPONSE_agregador', $p_url_response_agregador);
@@ -586,11 +602,18 @@ class Epayco_agregador extends PaymentModule
             }else{
               $external="true";
             }
-
+            $myIp = $this->getCustomerIp();
             //definir la url de respuesta y confirmacion segun la defina el usuario
             $p_url_response_agregador=Context::getContext()->link->getModuleLink('epayco_agregador', 'response');
             $p_url_confirmation_agregador=Context::getContext()->link->getModuleLink('epayco_agregador', 'confirmation');
-
+            $lang = $this->context->language->language_code;
+            if($lang == "es"){
+                $url_button = "https://multimedia.epayco.co/epayco-landing/btns/Boton-epayco-color1.png";
+            }else{
+                $url_button = "https://multimedia.epayco.co/epayco-landing/btns/Boton-epayco-color-Ingles.png";
+                $lang = "en";
+                
+            }
 
         $this->smarty->assign(array(
               'this_path_bw' => $this->_path,
@@ -601,7 +624,8 @@ class Epayco_agregador extends PaymentModule
               'custemail' => $emailComprador,
               'extra1' => $extra1,
               'extra2' => $extra2,
-              'total' => $valueNodecimal.'.'.$decimals,
+              //'total' => $valueNodecimal.'.'.$decimals,
+              'total' => $value,
               'currency' => $currency,
               'iso' => $iso,
               'iva' => $iva,
@@ -611,7 +635,8 @@ class Epayco_agregador extends PaymentModule
               'merchantpassword' => trim($this->p_key_agregador),
               'merchanttest'=> $test,
               'p_key_agregador'=>trim($this->p_key_agregador),
-              'public_key_agregador'=>trim($this->p_key_agregador),
+              'public_key_agregador'=>trim($this->public_key_agregador),
+              'private_key_agregador'=>trim($this->private_key_agregador),
               'custip' => $_SERVER['REMOTE_ADDR'],
               'custname' => $this->context->customer->firstname." ".$this->context->customer->lastname,
               'p_url_response_agregador' => $p_url_response_agregador,
@@ -622,7 +647,10 @@ class Epayco_agregador extends PaymentModule
               'p_billing_address'=>$addressdelivery->address1 . " " . $addressdelivery->address2,
               'p_billing_city'=>$addressdelivery->city,
               'p_billing_country'=>$addressdelivery->id_state,
-              'p_billing_phone'=>""
+              'p_billing_phone'=>"",
+              'url_button' => $url_button,
+              'lang' => $lenguaje,
+              'ip' => $myIp
               )
             );
             } else {
@@ -653,7 +681,7 @@ class Epayco_agregador extends PaymentModule
         $modalOption->setCallToActionText($this->l(''))
                       ->setAction($this->context->link->getModuleLink($this->name, 'validation', array(), true))
                       ->setAdditionalInformation($this->context->smarty->fetch('module:epayco_agregador/views/templates/hook/payment_onpage.tpl'))
-                      ->setLogo($this->_path.'/payco.png');
+                      ->setLogo('https://multimedia.epayco.co/epayco-landing/btns/epayco-logo-fondo-oscuro-lite.png');
 
       
         $payment_options = [
@@ -677,6 +705,26 @@ class Epayco_agregador extends PaymentModule
         return false;
     }
 
+    private function getCustomerIp(){
+        $ipaddress = '';
+        if (isset($_SERVER['HTTP_CLIENT_IP']))
+            $ipaddress = $_SERVER['HTTP_CLIENT_IP'];
+        else if(isset($_SERVER['HTTP_X_FORWARDED_FOR']))
+            $ipaddress = $_SERVER['HTTP_X_FORWARDED_FOR'];
+        else if(isset($_SERVER['HTTP_X_FORWARDED']))
+            $ipaddress = $_SERVER['HTTP_X_FORWARDED'];
+        else if(isset($_SERVER['HTTP_X_CLUSTER_CLIENT_IP']))
+            $ipaddress = $_SERVER['HTTP_X_CLUSTER_CLIENT_IP'];
+        else if(isset($_SERVER['HTTP_FORWARDED_FOR']))
+            $ipaddress = $_SERVER['HTTP_FORWARDED_FOR'];
+        else if(isset($_SERVER['HTTP_FORWARDED']))
+            $ipaddress = $_SERVER['HTTP_FORWARDED'];
+        else if(isset($_SERVER['REMOTE_ADDR']))
+            $ipaddress = $_SERVER['REMOTE_ADDR'];
+        else
+            $ipaddress = 'UNKNOWN';
+        return $ipaddress;
+    }
    
 
     public function hookDisplayHeader()
@@ -777,7 +825,15 @@ class Epayco_agregador extends PaymentModule
             //definir la url de respuesta y confirmacion segun la defina el usuario
             $p_url_response_agregador=Context::getContext()->link->getModuleLink('epayco_agregador', 'response');
             $p_url_confirmation_agregador=Context::getContext()->link->getModuleLink('epayco_agregador', 'confirmation');
-
+            $myIp = $this->getCustomerIp();
+            $lang = $this->context->language->language_code;
+            if($lang == "es"){
+                $url_button = "https://multimedia.epayco.co/epayco-landing/btns/Boton-epayco-color1.png";
+            }else{
+                $url_button = "https://multimedia.epayco.co/epayco-landing/btns/Boton-epayco-color-Ingles.png";
+                $lang = "en";
+                
+            }
             $this->smarty->assign(array(
               'this_path_bw' => $this->_path,
               'p_signature' => $p_signature,
@@ -787,7 +843,8 @@ class Epayco_agregador extends PaymentModule
               'custemail' => $emailComprador,
               'extra1' => $extra1,
               'extra2' => $extra2,
-              'total' => $valueNodecimal.'.'.$decimals,
+              //'total' => $valueNodecimal.'.'.$decimals,
+              'total' => $value,
               'currency' => $currency,
               'iso' => $iso,
               'iva' => $iva,
@@ -798,6 +855,7 @@ class Epayco_agregador extends PaymentModule
               'merchanttest'=> $test,
               'p_key_agregador'=>trim($this->p_key_agregador),
               'public_key_agregador'=>trim($this->public_key_agregador),
+              'private_key_agregador'=>trim($this->private_key_agregador),
               'custip' => $_SERVER['REMOTE_ADDR'],
               'custname' => $this->context->customer->firstname." ".$this->context->customer->lastname,
               'p_url_response_agregador' => $p_url_response_agregador,
@@ -808,7 +866,10 @@ class Epayco_agregador extends PaymentModule
               'p_billing_address'=>$addressdelivery->address1 . " " . $addressdelivery->address2,
               'p_billing_city'=>$addressdelivery->city,
               'p_billing_country'=>$addressdelivery->id_state,
-              'p_billing_phone'=>""
+              'p_billing_phone'=>"",
+              'url_button' => $url_button,
+              'lang' => $lenguaje,
+              'ip' => $myIp
               )
             );
 
@@ -869,7 +930,7 @@ class Epayco_agregador extends PaymentModule
              $ref_payco=$_REQUEST["ref_payco"];
           }
           if($url==""){
-            $url = 'https://secure.epayco.co/validation/v1/reference/'.$ref_payco;
+            $url = 'https://secure.epayco.io/validation/v1/reference/'.$ref_payco;
           }
                if($ref_payco!="" and $url!=""){
             //Consultamos la transaccion en el servidor
