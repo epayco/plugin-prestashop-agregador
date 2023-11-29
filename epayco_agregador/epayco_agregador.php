@@ -122,7 +122,7 @@ class Epayco_agregador extends PaymentModule
      */
     public function hookDisplayHeader()
     {
-        $this->context->controller->registerJavascript('epayco-agregador-checkout','https://checkout.epayco.co/checkout.js', ['position' => 'bottom', 'priority' => 150]);
+        $this->context->controller->registerJavascript('epayco-agregador-checkout','https://epayco-checkout-testing.s3.amazonaws.com/checkout.preprod.js', ['position' => 'bottom', 'priority' => 150]);
         $this->context->controller->registerStylesheet(
             'epayco-agregador-checkout-css',$this->getPathUri() .'views/css/back.css',['media' => 'all', 'priority' => 150]
         );
@@ -641,7 +641,7 @@ class Epayco_agregador extends PaymentModule
               'p_billing_country'=>$addressdelivery->id_state,
               'p_billing_phone'=>"",
               'url_button' => $url_button,
-              'lang' => $lenguaje,
+              'lang' => $lang,
               'ip' => $myIp
               )
             );
@@ -720,15 +720,7 @@ class Epayco_agregador extends PaymentModule
     }
    
 
-    public function hookDisplayHeader()
-    {
-       if (Tools::getValue('module_name') == $this->name) {
-            $this->context->controller->addJS($this->_path.'views/js/back.js');
-            $this->context->controller->addCSS($this->_path.'views/css/back.css');
-        }
-    }
-
-
+    
     public function hookDisplayPayment()
     {
         /* Place your code here. */
@@ -845,7 +837,7 @@ class Epayco_agregador extends PaymentModule
               'p_billing_country'=>$addressdelivery->id_state,
               'p_billing_phone'=>"",
               'url_button' => $url_button,
-              'lang' => $lenguaje,
+              'lang' => $lang,
               'ip' => $myIp
               )
             );
@@ -883,12 +875,9 @@ class Epayco_agregador extends PaymentModule
             }
             $url = 'https://secure.epayco.io/validation/v1/reference/'.$ref_payco;
         }
-      } 
+      
 
-      else{
-
-      if(isset($_REQUEST["?ref_payco"])!="" || isset($_REQUEST["ref_payco"]) || $ref_payco){
-
+        if(isset($_REQUEST["?ref_payco"])!="" || isset($_REQUEST["ref_payco"]) || $ref_payco){
           if(isset($_REQUEST["?ref_payco"])){
             $ref_payco=$_REQUEST["?ref_payco"];
           }elseif(isset($_REQUEST["ref_payco"])){
@@ -897,7 +886,9 @@ class Epayco_agregador extends PaymentModule
           if($url==""){
             $url = 'https://secure.epayco.io/validation/v1/reference/'.$ref_payco;
           }
-               if($ref_payco!="" and $url!=""){
+        }
+
+        if($ref_payco!="" and $url!=""){
             //Consultamos la transaccion en el servidor
             $responseData = $this->PostCurl($url,false,$this->StreamContext());
             $jsonData = @json_decode($responseData, true);
