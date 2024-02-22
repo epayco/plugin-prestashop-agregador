@@ -65,7 +65,8 @@
             extra3: "{$refVenta|escape:'htmlall':'UTF-8'}",
             autoclick: "true",
             ip:  "{$ip|escape:'htmlall':'UTF-8'}",
-            test: "{$merchanttest|escape:'htmlall':'UTF-8'}".toString()
+            test: "{$merchanttest|escape:'htmlall':'UTF-8'}".toString(),
+            extras_epayco:{extra5:"p24"}
         }
         const apiKey = "{$public_key_agregador}";
         const privateKey = "{$private_key_agregador}";
