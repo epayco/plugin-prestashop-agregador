@@ -670,7 +670,7 @@ class Epayco_agregador extends PaymentModule
        $this->context->smarty->assign(array("titulo"=>$this->p_titulo_agregador));
         
         $modalOption = new PrestaShop\PrestaShop\Core\Payment\PaymentOption();
-        $modalOption->setCallToActionText($this->l('Pago con '))
+        $modalOption->setCallToActionText($this->l('Pagar con '))
                       ->setAction($this->context->link->getModuleLink($this->name, 'validation', array(), true))
                       ->setAdditionalInformation($this->context->smarty->fetch('module:epayco_agregador/views/templates/hook/payment_onpage.tpl'))
                       ->setLogo($this->_path.'/logoepayco.svg');
