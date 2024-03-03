@@ -996,31 +996,16 @@ class Epayco_agregador extends PaymentModule
             WHERE `id_order_state` = ' . (int)$order->current_state);
         $orderStatusPreName = $orderStatusPre[0]['name'];
         
-        if($test == "yes")
-            {
-                if(
-                    $orderStatusPreName == "ePayco Pago Rechazado Prueba" ||
-                    $orderStatusPreName == "ePayco Pago Cancelado Prueba" ||
-                    $orderStatusPreName == "ePayco Pago Abandonado Prueba"||
-                    $orderStatusPreName == "ePayco Pago Expirado Prueba"  ||
-                    $orderStatusPreName == "ePayco Pago Fallido Prueba"
-                ){
-                    $validacionOrderName = false;
-                }else{
-                    $validacionOrderName = true;
-                    }
+            if(
+                $orderStatusPreName == "ePayco Pago Rechazado" ||
+                $orderStatusPreName == "ePayco Pago Cancelado" ||
+                $orderStatusPreName == "ePayco Pago Abandonado"||
+                $orderStatusPreName == "ePayco Pago Expirado"  ||
+                $orderStatusPreName == "ePayco Pago Fallido"
+            ){
+                $validacionOrderName = false;
             }else{
-                if(
-                    $orderStatusPreName == "ePayco Pago Rechazado" ||
-                    $orderStatusPreName == "ePayco Pago Cancelado" ||
-                    $orderStatusPreName == "ePayco Pago Abandonado"||
-                    $orderStatusPreName == "ePayco Pago Expirado"  ||
-                    $orderStatusPreName == "ePayco Pago Fallido"
-                ){
-                    $validacionOrderName = false;
-                }else{
-                    $validacionOrderName = true;
-                }
+                $validacionOrderName = true;
             }
 
         if($x_signature==$signature && $validation){
@@ -1055,33 +1040,12 @@ class Epayco_agregador extends PaymentModule
                         SELECT name FROM `' . _DB_PREFIX_ . 'order_state_lang`
                         WHERE `id_order_state` = ' . (int)$config['P_STATE_END_TRANSACTION_agregador']);
                     
-                    if($test == $isTestTransaction){
-                        $orderStatusName = $textMode == "TRUE" ? $orderStatus[0]['name'] . " Prueba" : $orderStatus[0]['name'];
-                        $newOrderName = $orderStatusName;
-                        $orderStatusEndId = Db::getInstance(_PS_USE_SQL_SLAVE_)->getValue(
-                            'SELECT * FROM `' . _DB_PREFIX_ . 'order_state_lang` 
-                            WHERE `name` = "' . $orderStatusName . '"'
-                        );
-                        if(!$orderStatusEndId){
-                            $orderStatusEndId = Db::getInstance(_PS_USE_SQL_SLAVE_)->getValue(
-                                'SELECT * FROM `' . _DB_PREFIX_ . 'order_state_lang` 
-                            WHERE `name` = "' . $orderStatus[0]['name'] . '"'
-                            );
-                        }
-                    }else{
-                        $orderStatusName = $orderStatus[0]['name'] . " Prueba";
-                        $newOrderName = $orderStatusName;
-                        $orderStatusEndId = Db::getInstance(_PS_USE_SQL_SLAVE_)->getValue(
-                            'SELECT * FROM `' . _DB_PREFIX_ . 'order_state_lang` 
-                            WHERE `name` = "' . $orderStatusName . '"'
-                        );
-                        
-                        if($orderStatusEndId != $current_state){
-                            if($orderStatusPreName != "ePayco Pago Pendiente Prueba"){
-                                $this->RestoreStock($order, '+'); 
-                            }
-                        }
-                    }
+                    $orderStatusName = $orderStatus[0]['name'];
+                    $newOrderName = $orderStatusName;
+                    $orderStatusEndId = Db::getInstance(_PS_USE_SQL_SLAVE_)->getValue(
+                        'SELECT * FROM `' . _DB_PREFIX_ . 'order_state_lang` 
+                        WHERE `name` = "' . $orderStatusName . '"'
+                    );
                   $history->changeIdOrderState((int)$orderStatusEndId, $order, true);
                 }else{
                     if (($x_cod_response == 2
@@ -1096,9 +1060,10 @@ class Epayco_agregador extends PaymentModule
                 				if(!$confirmation ){
                                     $this->RestoreStock($order, '+');
                 				}
-                				if($x_franchise == 'PSE'){
-                				    $this->RestoreStock($order, '+');
-                				}
+                                $franchise = array("VS","CR","AM","DC","MC","PSE");
+                                if (!in_array($x_franchise, $franchise )) {
+                                    $this->RestoreStock($order, '+');
+                                }
                 				if(trim($x_cod_response) == 10){
                 				     $this->RestoreStock($order, '-');
                 				}
@@ -1111,10 +1076,7 @@ class Epayco_agregador extends PaymentModule
                     }
                     $history->changeIdOrderState((int)Configuration::get($state), $order, true);
                     if(!$validacionOrderName){
-                        if(!$test && $orderStatusPreName != "ePayco Pago Rechazado" || $orderStatusPreName != "ePayco Pago Cancelado" || $orderStatusPreName != "ePayco Pago Fallido"){
-                            $keepOn = true;
-                        }
-                        if($test && $orderStatusPreName != "ePayco Pago Rechazado Prueba" || $orderStatusPreName != "ePayco Pago Cancelado Prueba" || $orderStatusPreName != "ePayco Pago Fallido Prueba" ){
+                        if($orderStatusPreName != "ePayco Pago Rechazado" || $orderStatusPreName != "ePayco Pago Cancelado" || $orderStatusPreName != "ePayco Pago Fallido"){
                             $keepOn = true;
                         }
 
@@ -1123,7 +1085,7 @@ class Epayco_agregador extends PaymentModule
                                 $orderStatus = Db::getInstance()->executeS('
                                     SELECT name FROM `' . _DB_PREFIX_ . 'order_state_lang`
                                     WHERE `id_order_state` = ' . (int)$config['P_STATE_END_TRANSACTION_agregador']);
-                                $orderStatusName = $textMode == "TRUE" ? $orderStatus[0]['name'] . " Prueba" : $orderStatus[0]['name'];
+                                $orderStatusName = $orderStatus[0]['name'];
                                 $orderStatusEndId = Db::getInstance(_PS_USE_SQL_SLAVE_)->getValue(
                                     'SELECT * FROM `' . _DB_PREFIX_ . 'order_state_lang` 
                                     WHERE `name` = "' . $orderStatusName . '"'
@@ -1131,16 +1093,9 @@ class Epayco_agregador extends PaymentModule
                                 $history->changeIdOrderState((int)$orderStatusEndId, $order, true); 
                                 $this->RestoreStock($order, '-'); 
                             }
-                            if($textMode == "TRUE" && $x_cod_response != 1){
-                                $history->changeIdOrderState((int)Configuration::get($state), $order, true); 
+                            if($x_cod_response != 1){
+                                $history->changeIdOrderState((int)Configuration::get($state), $order, true);
                                 $this->RestoreStock($order, '-');
-                            }else{
-                                if($x_cod_response != 1){
-                                    $history->changeIdOrderState((int)Configuration::get($state), $order, true);
-                                    if($x_franchise == 'PSE'){
-                				        $this->RestoreStock($order, '-');
-                				    }
-                                } 
                             } 
                         }
                         if(!$keepOn){
@@ -1157,17 +1112,10 @@ class Epayco_agregador extends PaymentModule
         }else{
             $history = new OrderHistory();
             $history->id_order = (int)$order->id;
-            if($test == "yes"){
-                if($orderStatusPreName != "ePayco Pago Fallido Prueba"){
-                    $this->RestoreStock($order, '+'); 
-                }
-                 $history->changeIdOrderState((int)Configuration::get("PAYCO_OS_FAILED_TEST"), $order, true);
-            }else{
-               if($orderStatusPreName != "ePayco Pago Fallido"){
-                    $this->RestoreStock($order, '+'); 
-                }
-                 $history->changeIdOrderState((int)Configuration::get("PAYCO_OS_FAILED"), $order, true); 
+            if($orderStatusPreName != "ePayco Pago Fallido"){
+                $this->RestoreStock($order, '+'); 
             }
+             $history->changeIdOrderState((int)Configuration::get("PAYCO_OS_FAILED"), $order, true); 
         } 
         
         
