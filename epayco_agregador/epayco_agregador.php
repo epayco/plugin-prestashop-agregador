@@ -873,7 +873,7 @@ class Epayco_agregador extends PaymentModule
             if(isset($_REQUEST["ref_payco"])){
                 $ref_payco=$_REQUEST["ref_payco"];
             }
-            $url = 'https://secure.epayco.io/validation/v1/reference/'.$ref_payco;
+            $url = 'https://secure.epayco.co/validation/v1/reference/'.$ref_payco;
         }
       
 
@@ -884,7 +884,7 @@ class Epayco_agregador extends PaymentModule
              $ref_payco=$_REQUEST["ref_payco"];
           }
           if($url==""){
-            $url = 'https://secure.epayco.io/validation/v1/reference/'.$ref_payco;
+            $url = 'https://secure.epayco.co/validation/v1/reference/'.$ref_payco;
           }
         }
 
