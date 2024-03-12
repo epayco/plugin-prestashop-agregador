@@ -54,7 +54,7 @@ class Epayco_agregador extends PaymentModule
     {
         $this->name = 'epayco_agregador';
         $this->tab = 'payments_gateways';
-        $this->version = '1.7.7';
+        $this->version = '1.8.0.0';
         $this->author = 'ePayco';
         $this->need_instance = 1;
 
