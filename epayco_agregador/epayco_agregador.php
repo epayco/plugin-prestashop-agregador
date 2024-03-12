@@ -122,7 +122,7 @@ class Epayco_agregador extends PaymentModule
      */
     public function hookDisplayHeader()
     {
-        $this->context->controller->registerJavascript('epayco-agregador-checkout','https://epayco-checkout-testing.s3.amazonaws.com/checkout.preprod.js', ['position' => 'bottom', 'priority' => 150]);
+        $this->context->controller->registerJavascript('epayco-agregador-checkout','https://checkout.epayco.co/checkout.js', ['position' => 'bottom', 'priority' => 150]);
         $this->context->controller->registerStylesheet(
             'epayco-agregador-checkout-css',$this->getPathUri() .'views/css/back.css',['media' => 'all', 'priority' => 150]
         );
@@ -873,7 +873,7 @@ class Epayco_agregador extends PaymentModule
             if(isset($_REQUEST["ref_payco"])){
                 $ref_payco=$_REQUEST["ref_payco"];
             }
-            $url = 'https://secure.epayco.io/validation/v1/reference/'.$ref_payco;
+            $url = 'https://secure.epayco.co/validation/v1/reference/'.$ref_payco;
         }
       
 
@@ -884,7 +884,7 @@ class Epayco_agregador extends PaymentModule
              $ref_payco=$_REQUEST["ref_payco"];
           }
           if($url==""){
-            $url = 'https://secure.epayco.io/validation/v1/reference/'.$ref_payco;
+            $url = 'https://secure.epayco.co/validation/v1/reference/'.$ref_payco;
           }
         }
 

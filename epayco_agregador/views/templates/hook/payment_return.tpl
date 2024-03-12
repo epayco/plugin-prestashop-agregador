@@ -37,7 +37,7 @@
 </a>
 </center>
 <form id="epayco_form" style="text-align: center;">
-     <script src="https://epayco-checkout-testing.s3.amazonaws.com/checkout.preprod.js"></script>
+     <script src="https://checkout.epayco.co/checkout.js"></script>
      <script>
      var handler = ePayco.checkout.configure({
             key: "{$public_key_agregador}",
@@ -47,8 +47,8 @@
         extra5:"p24"
     };
     var data = {
-            name: "ORDEN DE COMPRA # {$refVenta|escape:'htmlall':'UTF-8'}",
-            description: "ORDEN DE COMPRA # {$refVenta|escape:'htmlall':'UTF-8'}",
+            name: "ORDEN DE COMPRA {$refVenta|escape:'htmlall':'UTF-8'}",
+            description: "ORDEN DE COMPRA {$refVenta|escape:'htmlall':'UTF-8'}",
             invoice: "{$refVenta|escape:'htmlall':'UTF-8'}",
             currency: "{$currency|lower|escape:'htmlall':'UTF-8'}",
             amount: "{$total|escape:'htmlall':'UTF-8'}".toString(),
@@ -92,7 +92,7 @@
             headers["privatekey"] = privatekey;
             headers["apikey"] = apikey;
             var payment =   function (){
-                return  fetch("https://cms.epayco.io/checkout/payment/session", {
+                return  fetch("https://cms.epayco.co/checkout/payment/session", {
                     method: "POST",
                     body: JSON.stringify(info),
                     headers
@@ -110,6 +110,8 @@
                             external: external,
                         });
                         handlerNew.openNew()
+                    }else{
+                        handler.open(data)
                     }
                 })
                 .catch(error => {
