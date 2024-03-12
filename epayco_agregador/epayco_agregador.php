@@ -43,6 +43,7 @@ class Epayco_agregador extends PaymentModule
     public $p_cust_id_cliente_agregador;
     public $p_key_agregador;
     public $public_key_agregador;
+    public $private_key_agregador;
     public $p_test_request_agregador;
     public $p_type_checkout_agregador;
     public $p_url_response_agregador;
@@ -53,8 +54,8 @@ class Epayco_agregador extends PaymentModule
     {
         $this->name = 'epayco_agregador';
         $this->tab = 'payments_gateways';
-        $this->version = '1.7.6';
-        $this->author = 'Ricardo saldarriaga';
+        $this->version = '1.8.0.0';
+        $this->author = 'ePayco';
         $this->need_instance = 1;
 
         /**
@@ -75,7 +76,7 @@ class Epayco_agregador extends PaymentModule
         $this->ps_versions_compliancy = array('min' => '1.6', 'max' => _PS_VERSION_);
 
         $config = Configuration::getMultiple(array('P_CUST_ID_CLIENTE_agregador',
-                                                'P_KEY_agregador','PUBLIC_KEY_agregador',
+                                                'P_KEY_agregador','PUBLIC_KEY_agregador','PRIVATE_KEY_agregador',
                                                 'P_TEST_REQUEST_agregador',
                                                 'P_TITULO_agregador',
                                                 'P_URL_RESPONSE_agregador',
@@ -89,7 +90,9 @@ class Epayco_agregador extends PaymentModule
         if (isset($config['P_KEY_agregador']))
             $this->p_key_agregador = trim($config['P_KEY_agregador']);
         if (isset($config['PUBLIC_KEY_agregador']))
-            $this->public_key_agregador = trim($config['PUBLIC_KEY_agregador']);  
+            $this->public_key_agregador = trim($config['PUBLIC_KEY_agregador']);
+        if (isset($config['PRIVATE_KEY_agregador']))
+            $this->private_key_agregador = trim($config['PRIVATE_KEY_agregador']);      
         if (isset($config['P_TEST_REQUEST_agregador']))
             $this->p_test_request_agregador = $config['P_TEST_REQUEST_agregador'];
         if (isset($config['P_TITULO_agregador']))
@@ -107,10 +110,22 @@ class Epayco_agregador extends PaymentModule
         }else{
             $this->p_state_end_transaction_agregador = (int)Configuration::get('PS_OS_PAYMENT');
         }
-        if (!isset($this->p_cust_id_cliente_agregador) OR !isset($this->p_key_agregador) OR !isset($this->public_key_agregador))
-        $this->warning = $this->l('P_CUST_ID_CLIENTE_agregador, P_KEY_agregador y PUBLIC_KEY_agregador deben estar configurados para utilizar este módulo correctamente');
+        if (!isset($this->p_cust_id_cliente_agregador) OR !isset($this->p_key_agregador) OR !isset($this->public_key_agregador) OR !isset($this->private_key_agregador))
+        $this->warning = $this->l('P_CUST_ID_CLIENTE_agregador, P_KEY_agregador, PRIVATE_KEY_agregador y PUBLIC_KEY_agregador deben estar configurados para utilizar este módulo correctamente');
         if (!sizeof(Currency::checkPaymentCurrencies($this->id)))
         $this->warning = $this->l('No currency set for this module');
+    }
+
+
+    /**
+     * @return void
+     */
+    public function hookDisplayHeader()
+    {
+        $this->context->controller->registerJavascript('epayco-agregador-checkout','https://checkout.epayco.co/checkout.js', ['position' => 'bottom', 'priority' => 150]);
+        $this->context->controller->registerStylesheet(
+            'epayco-agregador-checkout-css',$this->getPathUri() .'views/css/back.css',['media' => 'all', 'priority' => 150]
+        );
     }
 
     /**
@@ -137,6 +152,7 @@ class Epayco_agregador extends PaymentModule
         Configuration::updateValue('P_CUST_ID_CLIENTE_agregador', '');
         Configuration::updateValue('P_KEY_agregador', '');
         Configuration::updateValue('PUBLIC_KEY_agregador', '');
+        Configuration::updateValue('PRIVATE_KEY_agregador', '');
         Configuration::updateValue('P_TEST_REQUEST_agregador', false);
         Configuration::updateValue('P_REDUCE_STOCK_PENDING', true);  
         Configuration::updateValue('P_URL_RESPONSE_agregador', Context::getContext()->link->getModuleLink('epayco_agregador', 'response'));
@@ -173,6 +189,7 @@ class Epayco_agregador extends PaymentModule
         Configuration::deleteByName('P_CUST_ID_CLIENTE_agregador');
         Configuration::deleteByName('P_KEY_agregador');
         Configuration::deleteByName('PUBLIC_KEY_agregador');
+        Configuration::deleteByName('PRIVATE_KEY_agregador');
         Configuration::deleteByName('P_TEST_REQUEST_agregador');
         Configuration::deleteByName('P_URL_RESPONSE_agregador');
         Configuration::deleteByName('P_URL_CONFIRMATION_agregador');
@@ -192,6 +209,7 @@ class Epayco_agregador extends PaymentModule
     {
         return $this->display(__FILE__, 'infos.tpl');
     }
+
     /**
      * Load the configuration form
      */
@@ -214,12 +232,6 @@ class Epayco_agregador extends PaymentModule
 
             $this->_html .= '<br />';
         }
-
-        // $this->context->smarty->assign('module_dir', $this->_path);
-
-        // $output = $this->context->smarty->fetch($this->local_path.'views/templates/admin/configure.tpl');
-
-        // return $output.$this->renderForm();
         $this->_html .= $this->_displayInfoAdmin();
         $this->_html .= $this->renderForm();
 
@@ -250,7 +262,6 @@ class Epayco_agregador extends PaymentModule
             'languages' => $this->context->controller->getLanguages(),
             'id_language' => $this->context->language->id,
         );
-
         return $helper->generateForm(array($this->getConfigForm()));
     }
 
@@ -261,7 +272,6 @@ class Epayco_agregador extends PaymentModule
     {
         
       $states = CreditCard_OrderStates::getOrderStates();
-      
       $order_states=array();
       
       foreach($states as $state){
@@ -300,6 +310,13 @@ class Epayco_agregador extends PaymentModule
                         'type' => 'text',
                         'label' => $this->trans('PUBLIC_KEY', array(), 'Modules.Epayco_agregador.Admin'),
                         'name' => 'PUBLIC_KEY_agregador',
+                        'desc' => $this->trans('LLave para autenticar y consumir los servicios de ePayco.', array(), 'Modules.Epayco_agregador.Admin'),
+                        'required' => true
+                    ),
+                    array(
+                        'type' => 'text',
+                        'label' => $this->trans('PRIVATE_KEY', array(), 'Modules.Epayco_agregador.Admin'),
+                        'name' => 'PRIVATE_KEY_agregador',
                         'desc' => $this->trans('LLave para autenticar y consumir los servicios de ePayco.', array(), 'Modules.Epayco_agregador.Admin'),
                         'required' => true
                     ),
@@ -377,7 +394,7 @@ class Epayco_agregador extends PaymentModule
                         'type' => 'select',
                         'label' => $this->trans('Estado final Pedido', array(), 'Modules.Epayco_agregador.Admin'),
                         'name' => 'P_STATE_END_TRANSACTION_agregador',
-                        'desc' => $this->trans('Escoja el estado del pago que se aplicar al confirmar la trasacción.', array(), 'Modules.Payco.Admin'),
+                        'desc' => $this->trans('Escoja el estado del pago que se aplicar al confirmar la trasacción.', array(), 'Modules.Epayco_agregador.Admin'),
                         'required' => true,
                         'options' => array(
                               'id' => 'id',
@@ -387,10 +404,8 @@ class Epayco_agregador extends PaymentModule
                                   'label' => $this->l('Seleccione un estado de Orden')
                               ),
                               'query'=>$order_states,
-
                         ),
                     ),
-
                 ),
                 'submit' => array(
                     'title' => $this->trans('Save', array(), 'Admin.Actions'),
@@ -411,6 +426,7 @@ class Epayco_agregador extends PaymentModule
             'P_CUST_ID_CLIENTE_agregador' => Tools::getValue('P_CUST_ID_CLIENTE_agregador', Configuration::get('P_CUST_ID_CLIENTE_agregador')),
             'P_KEY_agregador' => Tools::getValue('P_KEY_agregador', Configuration::get('P_KEY_agregador')),
             'PUBLIC_KEY_agregador' => Tools::getValue('PUBLIC_KEY_agregador', Configuration::get('PUBLIC_KEY_agregador')),
+            'PRIVATE_KEY_agregador' => Tools::getValue('PRIVATE_KEY_agregador', Configuration::get('PRIVATE_KEY_agregador')),
             'P_TEST_REQUEST_agregador' => Tools::getValue('P_TEST_REQUEST_agregador', Configuration::get('P_TEST_REQUEST_agregador')),
             'P_TYPE_CHECKOUT_agregador' => Tools::getValue('P_TYPE_CHECKOUT_agregador', Configuration::get('P_TYPE_CHECKOUT_agregador')),
             'P_URL_RESPONSE_agregador' => Tools::getValue('P_URL_RESPONSE_agregador', Configuration::get('P_URL_RESPONSE_agregador')),
@@ -427,7 +443,9 @@ class Epayco_agregador extends PaymentModule
         if (!Tools::getValue('P_KEY_agregador'))
           $this->_postErrors[] = $this->l('\'P_KEY_agregador\' Campo Requerido.');
         if (!Tools::getValue('PUBLIC_KEY_agregador'))
-          $this->_postErrors[] = $this->l('\'PUBLIC_KEY_agregador\' Campo Requerido.');      
+          $this->_postErrors[] = $this->l('\'PUBLIC_KEY_agregador\' Campo Requerido.');  
+        if (!Tools::getValue('PRIVATE_KEY_agregador'))
+          $this->_postErrors[] = $this->l('\'PRIVATE_KEY_agregador\' Campo Requerido.');        
         /*if (!Tools::getValue('P_TITULO'))
           $this->_postErrors[] = $this->l('\'P_TITULO\' Campo Requerido.');*/
         if (!Tools::getValue('P_STATE_END_TRANSACTION_agregador'))
@@ -441,8 +459,7 @@ class Epayco_agregador extends PaymentModule
      */
     protected function postProcess()
     {
-
-         if (Tools::isSubmit('submitEpayco_agregadorModule')) {
+        if (Tools::isSubmit('submitEpayco_agregadorModule')) {
 
             if(Tools::getValue('P_URL_RESPONSE_agregador')=="")
             {
@@ -465,6 +482,7 @@ class Epayco_agregador extends PaymentModule
             Configuration::updateValue('P_CUST_ID_CLIENTE_agregador', Tools::getValue('P_CUST_ID_CLIENTE_agregador'));
             Configuration::updateValue('P_KEY_agregador', Tools::getValue('P_KEY_agregador'));
             Configuration::updateValue('PUBLIC_KEY_agregador', Tools::getValue('PUBLIC_KEY_agregador'));
+            Configuration::updateValue('PRIVATE_KEY_agregador', Tools::getValue('PRIVATE_KEY_agregador'));
             Configuration::updateValue('P_TEST_REQUEST_agregador', Tools::getValue('P_TEST_REQUEST_agregador'));
             Configuration::updateValue('P_TITULO_agregador', $p_titulo_agregador);
             Configuration::updateValue('P_URL_RESPONSE_agregador', $p_url_response_agregador);
@@ -472,11 +490,8 @@ class Epayco_agregador extends PaymentModule
             Configuration::updateValue('P_TYPE_CHECKOUT_agregador', Tools::getValue('P_TYPE_CHECKOUT_agregador'));
             Configuration::updateValue('P_REDUCE_STOCK_PENDING', Tools::getValue('P_REDUCE_STOCK_PENDING'));
             Configuration::updateValue('P_STATE_END_TRANSACTION_agregador', Tools::getValue('P_STATE_END_TRANSACTION_agregador'));
-            
-            //CreditCard_OrderStates::updateStates(intval(Tools::getValue('id_os_initial')), Tools::getValue('id_os_deleteon'));
             $this->_html.= '<div class="bootstrap"><div class="alert alert-success">'.$this->l('Cambios Aplicados Exitosamente') . '</div></div>'; 
-
-         }
+        }
     }
 
     /**
@@ -537,8 +552,6 @@ class Epayco_agregador extends PaymentModule
         if ($order->getCurrentOrderState()->id != Configuration::get('PS_OS_ERROR'))
             $this->smarty->assign('status', 'ok');
 
-
-        
           $extra1 = $order->id_cart;
           $extra2 = $order->id;
           $emailComprador = $this->context->customer->email;
@@ -550,7 +563,6 @@ class Epayco_agregador extends PaymentModule
           Para determinar la ubicación o por default CO
           */
           $iso = 'CO';
-          //$valor = str_replace('.', '', $valor);
           if ($iva == 0) $valorBaseDevolucion = 0;
 
           $currency = $this->getCurrency();
@@ -565,16 +577,11 @@ class Epayco_agregador extends PaymentModule
           }
 
           $refVenta = $order->reference;
-
           $state = $order->getCurrentState();
 
           if ($state) {
-
-            $p_signature = md5(trim($this->p_cust_id_cliente_agregador).'^'.trim($this->p_key_agregador).'^'.$refVenta.'^'.$value.'^'.$currency);
-
-            $addressdelivery = new Address((int)($cart->id_address_delivery));
-            //$addressbilling = new Address((int)($cart->id_address_invoice));
-            
+                $p_signature = md5(trim($this->p_cust_id_cliente_agregador).'^'.trim($this->p_key_agregador).'^'.$refVenta.'^'.$value.'^'.$currency);
+                $addressdelivery = new Address((int)($cart->id_address_delivery));
             if($this->p_test_request_agregador==1){
               $test="true";
             }else{
@@ -587,10 +594,18 @@ class Epayco_agregador extends PaymentModule
               $external="true";
             }
 
+            $myIp = $this->getCustomerIp();
             //definir la url de respuesta y confirmacion segun la defina el usuario
             $p_url_response_agregador=Context::getContext()->link->getModuleLink('epayco_agregador', 'response');
             $p_url_confirmation_agregador=Context::getContext()->link->getModuleLink('epayco_agregador', 'confirmation');
-
+            $lang = $this->context->language->language_code;
+            if($lang == "es"){
+                $url_button = "https://multimedia.epayco.co/epayco-landing/btns/Boton-epayco-color1.png";
+            }else{
+                $url_button = "https://multimedia.epayco.co/epayco-landing/btns/Boton-epayco-color-Ingles.png";
+                $lang = "en";
+                
+            }
 
         $this->smarty->assign(array(
               'this_path_bw' => $this->_path,
@@ -601,7 +616,8 @@ class Epayco_agregador extends PaymentModule
               'custemail' => $emailComprador,
               'extra1' => $extra1,
               'extra2' => $extra2,
-              'total' => $valueNodecimal.'.'.$decimals,
+              //'total' => $valueNodecimal.'.'.$decimals,
+              'total' => $value,
               'currency' => $currency,
               'iso' => $iso,
               'iva' => $iva,
@@ -611,7 +627,8 @@ class Epayco_agregador extends PaymentModule
               'merchantpassword' => trim($this->p_key_agregador),
               'merchanttest'=> $test,
               'p_key_agregador'=>trim($this->p_key_agregador),
-              'public_key_agregador'=>trim($this->p_key_agregador),
+              'public_key_agregador'=>trim($this->public_key_agregador),
+              'private_key_agregador'=>trim($this->private_key_agregador),
               'custip' => $_SERVER['REMOTE_ADDR'],
               'custname' => $this->context->customer->firstname." ".$this->context->customer->lastname,
               'p_url_response_agregador' => $p_url_response_agregador,
@@ -622,13 +639,16 @@ class Epayco_agregador extends PaymentModule
               'p_billing_address'=>$addressdelivery->address1 . " " . $addressdelivery->address2,
               'p_billing_city'=>$addressdelivery->city,
               'p_billing_country'=>$addressdelivery->id_state,
-              'p_billing_phone'=>""
+              'p_billing_phone'=>"",
+              'url_button' => $url_button,
+              'lang' => $lang,
+              'ip' => $myIp
               )
             );
-            } else {
-              $this->smarty->assign('status', 'failed');
-          }
-
+        } else {
+            $this->smarty->assign('status', 'failed');
+        }
+        $this->context->controller->addCSS($this->_path.'/views/css/back.css');
         return $this->display(__FILE__, 'views/templates/hook/payment_return.tpl');
     }
 
@@ -650,10 +670,10 @@ class Epayco_agregador extends PaymentModule
        $this->context->smarty->assign(array("titulo"=>$this->p_titulo_agregador));
         
         $modalOption = new PrestaShop\PrestaShop\Core\Payment\PaymentOption();
-        $modalOption->setCallToActionText($this->l(''))
+        $modalOption->setCallToActionText($this->l('Pagar con '))
                       ->setAction($this->context->link->getModuleLink($this->name, 'validation', array(), true))
                       ->setAdditionalInformation($this->context->smarty->fetch('module:epayco_agregador/views/templates/hook/payment_onpage.tpl'))
-                      ->setLogo($this->_path.'/payco.png');
+                      ->setLogo($this->_path.'/logoepayco.svg');
 
       
         $payment_options = [
@@ -677,17 +697,30 @@ class Epayco_agregador extends PaymentModule
         return false;
     }
 
+
+    private function getCustomerIp(){
+        $ipaddress = '';
+        if (isset($_SERVER['HTTP_CLIENT_IP']))
+            $ipaddress = $_SERVER['HTTP_CLIENT_IP'];
+        else if(isset($_SERVER['HTTP_X_FORWARDED_FOR']))
+            $ipaddress = $_SERVER['HTTP_X_FORWARDED_FOR'];
+        else if(isset($_SERVER['HTTP_X_FORWARDED']))
+            $ipaddress = $_SERVER['HTTP_X_FORWARDED'];
+        else if(isset($_SERVER['HTTP_X_CLUSTER_CLIENT_IP']))
+            $ipaddress = $_SERVER['HTTP_X_CLUSTER_CLIENT_IP'];
+        else if(isset($_SERVER['HTTP_FORWARDED_FOR']))
+            $ipaddress = $_SERVER['HTTP_FORWARDED_FOR'];
+        else if(isset($_SERVER['HTTP_FORWARDED']))
+            $ipaddress = $_SERVER['HTTP_FORWARDED'];
+        else if(isset($_SERVER['REMOTE_ADDR']))
+            $ipaddress = $_SERVER['REMOTE_ADDR'];
+        else
+            $ipaddress = 'UNKNOWN';
+        return $ipaddress;
+    }
    
 
-    public function hookDisplayHeader()
-    {
-       if (Tools::getValue('module_name') == $this->name) {
-            $this->context->controller->addJS($this->_path.'views/js/back.js');
-            $this->context->controller->addCSS($this->_path.'views/css/back.css');
-        }
-    }
-
-
+    
     public function hookDisplayPayment()
     {
         /* Place your code here. */
@@ -695,12 +728,9 @@ class Epayco_agregador extends PaymentModule
 
     public function hookDisplayPaymentReturn($params)
     {
-        
-        
         if ($this->active == false)
             return;
 
-           
         if (version_compare(_PS_VERSION_, '1.7.0.0 ', '<')){
             $order = $params['objOrder'];
             $value = $params['total_to_pay'];
@@ -715,69 +745,64 @@ class Epayco_agregador extends PaymentModule
              $this->smarty->assign('status', 'ok');
         }
         
-          $extra1 = $order->id_cart;
-          $extra2 = $order->id;
-          $emailComprador = $this->context->customer->email;
-          $valorBaseDevolucion = $order->total_paid_tax_excl;
-          $iva = $value - $valorBaseDevolucion;
-          $cart= $this->context->cart;
+        $extra1 = $order->id_cart;
+        $extra2 = $order->id;
+        $emailComprador = $this->context->customer->email;
+        $valorBaseDevolucion = $order->total_paid_tax_excl;
+        $iva = $value - $valorBaseDevolucion;
+        $cart= $this->context->cart;
 
-          /*
-          Para determinar la ubicación o por default CO
-          */
-          $iso = 'CO';
-          //$valor = str_replace('.', '', $valor);
-          if ($iva == 0) $valorBaseDevolucion = 0;
+        /*
+        Para determinar la ubicación o por default CO
+        */
+        $iso = 'CO';
+        if ($iva == 0) $valorBaseDevolucion = 0;
 
-          $currency = $this->getCurrency();
-          $idcurrency = $order->id_currency;
-          foreach ($currency as $mon) {
+        $currency = $this->getCurrency();
+        $idcurrency = $order->id_currency;
+        foreach ($currency as $mon) {
             if ($idcurrency == $mon['id_currency']) $currency = $mon['iso_code'];
-          }
+        }
 
-          //si no existe la moneda
-          if ($currency == ''){
+        //si no existe la moneda
+        if ($currency == ''){
             $currency = 'COP';
-          }
+        }
 
-          $refVenta = $order->reference;
+        $refVenta = $order->reference;
+        $state = $order->getCurrentState();
 
-          $state = $order->getCurrentState();
-
-          if ($state) {
-
+        if ($state) {
             $p_signature = md5(trim($this->p_cust_id_cliente_agregador).'^'.trim($this->p_key_agregador).'^'.$refVenta.'^'.$value.'^'.$currency);
-
             $addressdelivery = new Address((int)($cart->id_address_delivery));
-            //$addressbilling = new Address((int)($cart->id_address_invoice));
-            
+        
             if($this->p_test_request_agregador==1){
-              $test="true";
+                $test="true";
             }else{
-              $test="false";
+                $test="false";
             }
 
             if($this->p_type_checkout_agregador==1){
-              $external="false";
+                $external="false";
             }else{
-              $external="true";
+                $external="true";
             }
-            //Busca si ya se restauro el stock
-            if (!Epayco_agregadorOrder::ifExist($order->id)) {
-                //si no se restauro el stock restaurarlo inmediatamente
-                $this->RestoreStock($order,'+');
-                Epayco_agregadorOrder::create($order->id,1);
-            }
-
-
+           
 
             $valueNodecimal = substr($value, 0,strrpos($value, '.'));
             $decimals = !substr($value, strrpos($value, '.')+1 ,2) ? '00': substr($value, strrpos($value, '.')+1 ,2);
-            
             //definir la url de respuesta y confirmacion segun la defina el usuario
             $p_url_response_agregador=Context::getContext()->link->getModuleLink('epayco_agregador', 'response');
             $p_url_confirmation_agregador=Context::getContext()->link->getModuleLink('epayco_agregador', 'confirmation');
-
+            $myIp = $this->getCustomerIp();
+            $lang = $this->context->language->language_code;
+            if($lang == "es"){
+                $url_button = "https://multimedia.epayco.co/epayco-landing/btns/Boton-epayco-color1.png";
+            }else{
+                $url_button = "https://multimedia.epayco.co/epayco-landing/btns/Boton-epayco-color-Ingles.png";
+                $lang = "en";
+                
+            }
             $this->smarty->assign(array(
               'this_path_bw' => $this->_path,
               'p_signature' => $p_signature,
@@ -787,7 +812,8 @@ class Epayco_agregador extends PaymentModule
               'custemail' => $emailComprador,
               'extra1' => $extra1,
               'extra2' => $extra2,
-              'total' => $valueNodecimal.'.'.$decimals,
+              //'total' => $valueNodecimal.'.'.$decimals,
+              'total' => $value,
               'currency' => $currency,
               'iso' => $iso,
               'iva' => $iva,
@@ -798,6 +824,7 @@ class Epayco_agregador extends PaymentModule
               'merchanttest'=> $test,
               'p_key_agregador'=>trim($this->p_key_agregador),
               'public_key_agregador'=>trim($this->public_key_agregador),
+              'private_key_agregador'=>trim($this->private_key_agregador),
               'custip' => $_SERVER['REMOTE_ADDR'],
               'custname' => $this->context->customer->firstname." ".$this->context->customer->lastname,
               'p_url_response_agregador' => $p_url_response_agregador,
@@ -808,61 +835,49 @@ class Epayco_agregador extends PaymentModule
               'p_billing_address'=>$addressdelivery->address1 . " " . $addressdelivery->address2,
               'p_billing_city'=>$addressdelivery->city,
               'p_billing_country'=>$addressdelivery->id_state,
-              'p_billing_phone'=>""
+              'p_billing_phone'=>"",
+              'url_button' => $url_button,
+              'lang' => $lang,
+              'ip' => $myIp
               )
             );
-
-          } else {
-              $this->smarty->assign('status', 'failed');
-          }
-
+        } else {
+            $this->smarty->assign('status', 'failed');
+        }
+        $this->context->controller->addCSS($this->_path.'/views/css/back.css');
         return $this->display(__FILE__, 'views/templates/hook/payment_return.tpl');
-
     }
 
-        private function is_blank($var) {
+    private function is_blank($var) {
         return isset($var) || $var == '0' ? ($var == "" ? true : false) : false;
-    }
-
-
+}
 
     public function PaymentReturnOnpage(){
 
-      $ref_payco="";
-      $url="";
-      $confirmation=false;
-      $x_ref_payco="";
+        $ref_payco="";
+        $url="";
+        $confirmation=false;
+        $x_ref_payco="";
 
-      foreach ($_REQUEST as $value) {
-        if(preg_match("/ref_payco/", $value)){
-          $arr_refpayco=explode("=",$value);
-          $ref_payco=$arr_refpayco[1];
+        foreach ($_REQUEST as $value) {
+            if(preg_match("/ref_payco/", $value)){
+                $arr_refpayco=explode("=",$value);
+                $ref_payco=$arr_refpayco[1];
+            }
         }
-      }
 
-      if(isset($_REQUEST["x_ref_payco"])){
-          $config = Configuration::getMultiple(array('P_CUST_ID_CLIENTE_agregador','P_KEY_agregador','PUBLIC_KEY_agregador','P_TEST_REQUEST_agregador'));  
-          $public_key_agregador=$config["PUBLIC_KEY_agregador"];
-          $ref_payco=$_REQUEST["x_ref_payco"];
-          $url ="https://secure.payco.co/restpagos/transaction/response.json?ref_payco=".$ref_payco."&public_key=".$public_key_agregador;
-          $confirmation=true;
-
-        if($ref_payco!="" and $url!=""){
-            //Consultamos la transaccion en el servidor
-            $responseData = $this->PostCurl($url,false,$this->StreamContext());
-            $jsonData = @json_decode($responseData, true);
-            $data = $jsonData['data'];
-             $data["ref_payco"]=$ref_payco;
-             $data["url"]=$url;
-            $this->Acentarpago($data["x_extra1"],$data["x_cod_response"],$data["x_ref_payco"],$data["x_transaction_id"],$data["x_amount"],$data["x_currency_code"],$data["x_signature"],$confirmation);
-            $this->context->smarty->assign($data);
+        if(isset($_REQUEST["?ref_payco"])!="" || isset($_REQUEST["ref_payco"]) || $ref_payco){
+            if(isset($_REQUEST["?ref_payco"])){
+                $ref_payco=$_REQUEST["?ref_payco"];
+            }
+            if(isset($_REQUEST["ref_payco"])){
+                $ref_payco=$_REQUEST["ref_payco"];
+            }
+            $url = 'https://secure.epayco.co/validation/v1/reference/'.$ref_payco;
         }
-      } 
+      
 
-      else{
-
-      if(isset($_REQUEST["?ref_payco"])!="" || isset($_REQUEST["ref_payco"]) || $ref_payco){
-
+        if(isset($_REQUEST["?ref_payco"])!="" || isset($_REQUEST["ref_payco"]) || $ref_payco){
           if(isset($_REQUEST["?ref_payco"])){
             $ref_payco=$_REQUEST["?ref_payco"];
           }elseif(isset($_REQUEST["ref_payco"])){
@@ -871,144 +886,254 @@ class Epayco_agregador extends PaymentModule
           if($url==""){
             $url = 'https://secure.epayco.co/validation/v1/reference/'.$ref_payco;
           }
-               if($ref_payco!="" and $url!=""){
+        }
+
+        if($ref_payco!="" and $url!=""){
             //Consultamos la transaccion en el servidor
             $responseData = $this->PostCurl($url,false,$this->StreamContext());
             $jsonData = @json_decode($responseData, true);
             $data = $jsonData['data'];
-             $data["ref_payco"]=$ref_payco;
-             $data["url"]=$url;
-            $this->Acentarpago($data["x_extra1"],$data["x_cod_response"],$data["x_ref_payco"],$data["x_transaction_id"],$data["x_amount"],$data["x_currency_code"],$data["x_signature"],$confirmation);
+            $data["ref_payco"]=$ref_payco;
+            $data["url"]=$url;
+            $this->Acentarpago($data["x_extra1"],$data["x_cod_response"],$data["x_ref_payco"],$data["x_transaction_id"],$data["x_amount"],$data["x_currency_code"],$data["x_signature"],$confirmation,$data["x_test_request"], $data["x_approval_code"],$data["x_franchise"]);
             $this->context->smarty->assign($data);
         }
     }
- 
 
-    }
-}
-
-    public function PaymentSuccess($extra1,$response,$referencia,$transid,$amount,$currency,$signature) {
-      
-
-      $this->Acentarpago($extra1,$response,$referencia,$transid,$amount,$currency,$signature,true);
-
+    public function PaymentSuccess($extra1,$response,$referencia,$transid,$amount,$currency,$signature,$confirmation,$textMode,$x_approval_code,$x_franchise) {
+      $this->Acentarpago($extra1,$response,$referencia,$transid,$amount,$currency,$signature,$confirmation,$textMode,$x_approval_code,$x_franchise);
     }
 
+    private function Acentarpago($extra1,$response,$referencia,$transid,$amount,$currency,$signature,$confirmation,$textMode,$x_approval_code,$x_franchise) {
 
-
-
-    private function Acentarpago($extra1,$response,$referencia,$transid,$amount,$currency,$signature,$confirmation) {
-
-
-           $config = Configuration::getMultiple(array('P_CUST_ID_CLIENTE_agregador','P_KEY_agregador','PUBLIC_KEY_agregador','P_TEST_REQUEST_agregador'));  
-           $x_cust_id_cliente=trim($config['P_CUST_ID_CLIENTE_agregador']);
-           $x_key=trim($config['P_KEY_agregador']);
-   
-          // $x_cust_id_cliente='63803';
-          // $x_key='d0fb15fba3e9b529b2bef801f7da40852d8f5256';
-           $idorder=$extra1;
-           $x_cod_response=(int)$response;
-           $x_signature=hash('sha256',
+        $config = Configuration::getMultiple(array('P_CUST_ID_CLIENTE_agregador','P_KEY_agregador','PUBLIC_KEY_agregador','P_TEST_REQUEST_agregador','P_STATE_END_TRANSACTION_agregador'));  
+        $x_cust_id_cliente=trim($config['P_CUST_ID_CLIENTE_agregador']);
+        $x_key=trim($config['P_KEY_agregador']);
+        $idorder=$extra1;
+        $x_cod_response=(int)$response;
+        $x_signature=hash('sha256',
             $x_cust_id_cliente.'^'
             .$x_key.'^'
             .$referencia.'^'
             .$transid.'^'
             .$amount.'^'
             .$currency
-          );
+        );
 
-          $payment=false;
-          $state = 'PAYCO_OS_REJECTED';
-          if ($x_cod_response == 4)
-            $state = 'PAYCO_OS_FAILED';
-          else if ($x_cod_response == 2)
+        $payment=false;
+        if($textMode == "TRUE"){
+            $state = 'PAYCO_OS_REJECTED_TEST';
+            if ($x_cod_response == 4)
+                $state = 'PAYCO_OS_FAILED_TEST';
+            else if ($x_cod_response == 2)
+                $state = 'PAYCO_OS_REJECTED_TEST';
+            else if ($x_cod_response == 3){
+                $state = 'PAYCO_OS_PENDING_TEST';
+                $statePending = $state;
+            }
+            else if ($x_cod_response == 9)
+                $state = 'PAYCO_OS_EXPIRED_TEST';
+            else if ($x_cod_response == 10)
+                $state = 'PAYCO_OS_ABANDONED_TEST';
+            else if ($x_cod_response == 11)
+                $state = 'PAYCO_OS_CANCELED_TEST';
+            else if ($x_cod_response == 1){
+                $state = 'PS_OS_PAYMENT';
+                $payment=true;
+            }
+        }else{
             $state = 'PAYCO_OS_REJECTED';
-          else if ($x_cod_response == 3){
-            $state = 'PAYCO_OS_PENDING';
-          }
-          else if ($x_cod_response == 9)
-            $state = 'PAYCO_OS_EXPIRED';
-          else if ($x_cod_response == 10)
-            $state = 'PAYCO_OS_ABANDONED';
-          else if ($x_cod_response == 11)
-            $state = 'PAYCO_OS_CANCELED';
-          else if ($x_cod_response == 1){
-             $state = 'PS_OS_PAYMENT';
-             $payment=true;
-          }
-    
-          if($x_signature==$signature){
-
-       
-            //$id_state=(int)Configuration::get($state);
+            if ($x_cod_response == 4)
+                $state = 'PAYCO_OS_FAILED';
+            else if ($x_cod_response == 2)
+                $state = 'PAYCO_OS_REJECTED';
+            else if ($x_cod_response == 3){
+                $state = 'PAYCO_OS_PENDING';
+                $statePending = $state;
+            }
+            else if ($x_cod_response == 9)
+                $state = 'PAYCO_OS_EXPIRED';
+            else if ($x_cod_response == 10)
+                $state = 'PAYCO_OS_ABANDONED';
+            else if ($x_cod_response == 11)
+                $state = 'PAYCO_OS_CANCELED';
+            else if ($x_cod_response == 1){
+                $state = 'PS_OS_PAYMENT';
+                $payment=true;
+            }
+        }
         
-            $order = new Order((int)Order::getOrderByCartId((int)$idorder));
-
-            //Busca si ya se restauro el stock y si se configuro reducir el stock en transacciones pendientes  
-       if ($x_cod_response == 3 && !Epayco_agregadorOrder::ifStockDiscount($order->id) && (int)Configuration::get('P_REDUCE_STOCK_PENDING') == 1) {
-
-                //reducir el stock
-                if (Epayco_agregadorOrder::updateStockDiscount($order->id,1)) {
-                    $this->RestoreStock($order,'-');
-                }
+        $order = new Order((int)Order::getOrderByCartId((int)$idorder));
+        $keepOn = false;
+        if($this->p_test_request_agregador==1){
+            $test="yes";
+        }else{
+            $test="no";
+        }
+        $isTestTransaction = $textMode == 'TRUE' ? "yes" : "no";
+        $orderAmount = floatval($order->getOrdersTotalPaid());
+        if($orderAmount == floatval($amount)){
+            
+            if($isTestTransaction == "yes"){
+               $validation = true;  
             }
 
-            $current_state = $order->current_state;
+            if($isTestTransaction == "no" ){
+                if($x_approval_code != "000000" && $x_cod_response == 1){
+                    $validation = true;
+                }else{
+                    if($x_cod_response != 1){
+                        $validation = true;
+                    }else{
+                        $validation = false;
+                    }
+                }            
+            }
+        }
+        
+        $orderStatusPre = Db::getInstance()->executeS('
+            SELECT name FROM `' . _DB_PREFIX_ . 'order_state_lang`
+            WHERE `id_order_state` = ' . (int)$order->current_state);
+        $orderStatusPreName = $orderStatusPre[0]['name'];
+        
+            if(
+                $orderStatusPreName == "ePayco Pago Rechazado" ||
+                $orderStatusPreName == "ePayco Pago Cancelado" ||
+                $orderStatusPreName == "ePayco Pago Abandonado"||
+                $orderStatusPreName == "ePayco Pago Expirado"  ||
+                $orderStatusPreName == "ePayco Pago Fallido"
+            ){
+                $validacionOrderName = false;
+            }else{
+                $validacionOrderName = true;
+            }
 
+        if($x_signature==$signature && $validation){
+             $current_state = $order->current_state;
+             if (!Epayco_agregadorOrder::ifStockDiscount($order->id)) {
+                Epayco_agregadorOrder::updateStockDiscount($order->id, 1);
+            }
+             
+            
             if ($current_state != Configuration::get($state))
             {
-             
+                if ($confirmation && !$payment && $x_cod_response != 3 && Epayco_agregadorOrder::ifStockDiscount($order->id)) {
+                    if(!$validacionOrderName){
+                        $this->RestoreStock($order, '+');
+                        $history = new OrderHistory();
+                        $history->id_order = (int)$order->id;
+                        $history->changeIdOrderState((int)Configuration::get($state), $order, true);
+                    }
+                }else{
+                    if($confirmation && $x_cod_response == 3 && EpaycoOrder::ifStockDiscount($order->id)){
+                        if(!$validacionOrderName){
+                            $this->RestoreStock($order, '-');
+                        }
+                    }
+                }                
+                
                 $history = new OrderHistory();
                 $history->id_order = (int)$order->id;
-              
-                if($payment){
-                  $history->changeIdOrderState((int)$this->p_state_end_transaction_agregador, $order, true);
-                }else{
-                  $history->changeIdOrderState((int)Configuration::get($state), $order, true);
-                }
-                $history->addWithemail(false);
-                 
-            }
-
-            //validar si la transaccion esta pendiente y pasa a rechazada y ya habia descontado el stock
-                  if($current_state == Configuration::get('PAYCO_OS_PENDING') && ($x_cod_response == 2 || $x_cod_response == 4) && Epayco_agregadorOrder::ifStockDiscount($order->id)){
-
-                //si no se restauro el stock restaurarlo inmediatamente
-                $this->RestoreStock($order,'+');
-            };
-
-            //validar si la transaccion fue ACEPTADA
-       
-            if ($payment)
-            {
-                //Busca si ya se descontó el stock
-                if (!Epayco_agregadorOrder::ifStockDiscount($order->id)) {
+                
+                if($payment && $validacionOrderName){               
+                    $orderStatus = Db::getInstance()->executeS('
+                        SELECT name FROM `' . _DB_PREFIX_ . 'order_state_lang`
+                        WHERE `id_order_state` = ' . (int)$config['P_STATE_END_TRANSACTION_agregador']);
                     
-                    //se descuenta el stock
-                    if (Epayco_agregadorOrder::updateStockDiscount($order->id,1)) {
-                        $this->RestoreStock($order,'-');
+                    $orderStatusName = $orderStatus[0]['name'];
+                    $newOrderName = $orderStatusName;
+                    $orderStatusEndId = Db::getInstance(_PS_USE_SQL_SLAVE_)->getValue(
+                        'SELECT * FROM `' . _DB_PREFIX_ . 'order_state_lang` 
+                        WHERE `name` = "' . $orderStatusName . '"'
+                    );
+                  $history->changeIdOrderState((int)$orderStatusEndId, $order, true);
+                }else{
+                    if (($x_cod_response == 2
+                            || $x_cod_response == 4
+                            || $x_cod_response == 6
+                            || $x_cod_response == 9
+                            || $x_cod_response == 10
+                            || $x_cod_response == 11
+                        ) ) {
+                        if ($current_state != Configuration::get($state)) {
+
+                				if(!$confirmation ){
+                                    $this->RestoreStock($order, '+');
+                				}
+                                $franchise = array("VS","CR","AM","DC","MC","PSE");
+                                if (!in_array($x_franchise, $franchise )) {
+                                    $this->RestoreStock($order, '+');
+                                }
+                				if(trim($x_cod_response) == 10){
+                				     $this->RestoreStock($order, '-');
+                				}
+                          
+                            if($orderStatusPreName == "ePayco Esperando Pago"){
+                                $history->changeIdOrderState((int)Configuration::get($state), $order, true);
+                                $this->RestoreStock($order, '+');
+                            }
+                        }
+                    }
+                    $history->changeIdOrderState((int)Configuration::get($state), $order, true);
+                    if(!$validacionOrderName){
+                        if($orderStatusPreName != "ePayco Pago Rechazado" || $orderStatusPreName != "ePayco Pago Cancelado" || $orderStatusPreName != "ePayco Pago Fallido"){
+                            $keepOn = true;
+                        }
+
+                        if($keepOn ){
+                            if($x_cod_response == 1){
+                                $orderStatus = Db::getInstance()->executeS('
+                                    SELECT name FROM `' . _DB_PREFIX_ . 'order_state_lang`
+                                    WHERE `id_order_state` = ' . (int)$config['P_STATE_END_TRANSACTION_agregador']);
+                                $orderStatusName = $orderStatus[0]['name'];
+                                $orderStatusEndId = Db::getInstance(_PS_USE_SQL_SLAVE_)->getValue(
+                                    'SELECT * FROM `' . _DB_PREFIX_ . 'order_state_lang` 
+                                    WHERE `name` = "' . $orderStatusName . '"'
+                            );
+                                $history->changeIdOrderState((int)$orderStatusEndId, $order, true); 
+                                $this->RestoreStock($order, '-'); 
+                            }
+                            if($x_cod_response != 1){
+                                $history->changeIdOrderState((int)Configuration::get($state), $order, true);
+                                $this->RestoreStock($order, '-');
+                            } 
+                        }
+                        if(!$keepOn){
+                            $history->changeIdOrderState((int)Configuration::get($state), $order, true);
+                        }
                     }
                 }
-
-   
+                if(!$keepOn){
+                    if($x_cod_response != 1){
+                        $history->changeIdOrderState((int)Configuration::get($state), $order, true);
+                    }
+                } 
             }
-
-            if($confirmation){
-                header("HTTP/1.1 200 OK");
-               
-            }else{
-                if(Configuration::get('P_URL_RESPONSE_agregador') != Context::getContext()->link->getModuleLink('epayco_agregador', 'response')){
-
-                    //redireccionado
-                    Tools::redirect(Configuration::get('P_URL_RESPONSE_agregador'));
-                }
+        }else{
+            $history = new OrderHistory();
+            $history->id_order = (int)$order->id;
+            if($orderStatusPreName != "ePayco Pago Fallido"){
+                $this->RestoreStock($order, '+'); 
+            }
+             $history->changeIdOrderState((int)Configuration::get("PAYCO_OS_FAILED"), $order, true); 
+        } 
+        
+        
+        if($confirmation){
+            header("HTTP/1.1 200 OK");
+            echo $x_cod_response;
+            die();
+           
+        }else{
+           if(Configuration::get('P_URL_RESPONSE_agregador') != Context::getContext()->link->getModuleLink('epayco_agregador', 'response')){
+            //redireccionado
+                Tools::redirect(Configuration::get('P_URL_RESPONSE_agregador'));
+            }
+        }
             
-            }
-
-          }
-                           
     }
-      //restaurar el stock de la orden
+
+    //restaurar el stock de la orden
     private function RestoreStock($orderId,$operation){
         $order = $orderId;
 
@@ -1020,44 +1145,39 @@ class Epayco_agregador extends PaymentModule
     private function PostCurl($url){
 
         if (function_exists('curl_init')) {
-              $ch = curl_init();
-              $timeout = 5;
-              $user_agent='Mozilla/5.0 (Windows NT 6.1; rv:8.0) Gecko/20100101 Firefox/8.0';
-              curl_setopt($ch, CURLOPT_URL, $url);
-              curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-              curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
-              curl_setopt($ch, CURLOPT_USERAGENT, $user_agent);
-              curl_setopt($ch, CURLOPT_HEADER, 0);
-              curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
-              curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-              curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $timeout);
-              curl_setopt($ch,CURLOPT_TIMEOUT,$timeout);
-              curl_setopt($ch,CURLOPT_MAXREDIRS,10);
-              $data = curl_exec($ch);
-              curl_close($ch);
-              return $data;
-          }else{
-              $data =  @Tools::file_get_contents($url);
-              return $data;
-          }
+            $ch = curl_init();
+            $timeout = 5;
+            $user_agent='Mozilla/5.0 (Windows NT 6.1; rv:8.0) Gecko/20100101 Firefox/8.0';
+            curl_setopt($ch, CURLOPT_URL, $url);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+            curl_setopt($ch, CURLOPT_USERAGENT, $user_agent);
+            curl_setopt($ch, CURLOPT_HEADER, 0);
+            curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $timeout);
+            curl_setopt($ch,CURLOPT_TIMEOUT,$timeout);
+            curl_setopt($ch,CURLOPT_MAXREDIRS,10);
+            $data = curl_exec($ch);
+            curl_close($ch);
+            return $data;
+        }else{
+            $data =  @Tools::file_get_contents($url);
+            return $data;
+        }
     }
 
     private function StreamContext(){
-
-                $context = stream_context_create(array(
-                    'http' => array(
-                        'method' => 'POST',
-                        'header' => 'Content-Type: application/x-www-form-urlencoded',
-                        'protocol_version' => 1.1,
-                        'timeout' => 10,
-                        'ignore_errors' => true
-                    )
-                ));
-
-                return $context;
+        $context = stream_context_create(array(
+            'http' => array(
+                'method' => 'POST',
+                'header' => 'Content-Type: application/x-www-form-urlencoded',
+                'protocol_version' => 1.1,
+                'timeout' => 10,
+                'ignore_errors' => true
+            )
+        ));
+        return $context;
     }
-
-
-
 
 }

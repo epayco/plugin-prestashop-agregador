@@ -9,13 +9,15 @@
 * [Instalación](#instalación)
 
 ## Versiones
+* [ePayco plugin OnPage_Checkout_PrestaShop v1.8.0.0](https://github.com/epayco/plugin-prestashop-agregador/releases/tag/v1.8.0.0).
+* [ePayco plugin OnPage_Checkout_PrestaShop v1.7.7](https://github.com/epayco/plugin-prestashop-agregador/releases/tag/v1.7.7).
 * [ePayco plugin OnPage_Checkout_PrestaShop v1.7.6](https://github.com/epayco/plugin-prestashop-agregador/releases/tag/v1.7.6.7).
 
 
 ## Requisitos
 
 * Tener una cuenta activa en [ePayco](https://pagaycobra.com).
-* Tener instalado PrestaShop v1.6.1.6.
+* Tener instalado PrestaShop v1.7.0.0.
 * Acceso a las carpetas donde se encuetra instalado PrestaShop.
 * Acceso al admin de PrestaShop.
 
