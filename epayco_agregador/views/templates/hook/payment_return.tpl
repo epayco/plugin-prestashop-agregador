@@ -121,10 +121,10 @@
         var bntPagar = document.getElementById("btn_epayco");
         bntPagar.addEventListener("click", openChekout);
         openChekout()  
-    </script>
+</script>
 </form>
 
-    <script language="Javascript">
+<script language="Javascript">
     const app = document.getElementById("epayco_form");
     window.onload = function() {
         document.addEventListener("contextmenu", function(e){
