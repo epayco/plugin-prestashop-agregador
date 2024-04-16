@@ -122,6 +122,8 @@
         bntPagar.addEventListener("click", openChekout);
         openChekout()  
 </script>
+</form>
+
 <script language="Javascript">
     const app = document.getElementById("epayco_form");
     window.onload = function() {
