@@ -71,6 +71,22 @@
             test: "{$merchanttest|escape:'htmlall':'UTF-8'}".toString(),
             extras_epayco: extras_epayco
         }
+        const apiKey = "{$public_key_agregador}";
+        const privateKey = "{$private_key_agregador}";
+        var openChekout = function () {
+            if(localStorage.getItem("invoicePaymentAgregador") == null){
+            localStorage.setItem("invoicePaymentAgregador", data.invoice);
+                makePayment(privateKey,apiKey,data, data.external == "true"?true:false)
+            }else{
+                if(localStorage.getItem("invoicePaymentAgregador") != data.invoice){
+                    localStorage.removeItem("invoicePaymentAgregador");
+                    localStorage.setItem("invoicePaymentAgregador", data.invoice);
+                        makePayment(privateKey,apiKey,data, data.external == "true"?true:false)
+                }else{
+                    makePayment(privateKey,apiKey,data, data.external == "true"?true:false)
+                }
+            }
+        }
         var makePayment = function (privatekey, apikey, info, external) {
             const headers = { "Content-Type": "application/json" } ;
             headers["privatekey"] = privatekey;
