@@ -54,7 +54,7 @@ class Epayco_agregador extends PaymentModule
     {
         $this->name = 'epayco_agregador';
         $this->tab = 'payments_gateways';
-        $this->version = '1.7.7';
+        $this->version = '1.8.0.0';
         $this->author = 'ePayco';
         $this->need_instance = 1;
 
@@ -122,7 +122,7 @@ class Epayco_agregador extends PaymentModule
      */
     public function hookDisplayHeader()
     {
-        $this->context->controller->registerJavascript('epayco-agregador-checkout','https://epayco-checkout-testing.s3.amazonaws.com/checkout.preprod.js', ['position' => 'bottom', 'priority' => 150]);
+        $this->context->controller->registerJavascript('epayco-agregador-checkout','https://checkout.epayco.co/checkout.js', ['position' => 'bottom', 'priority' => 150]);
         $this->context->controller->registerStylesheet(
             'epayco-agregador-checkout-css',$this->getPathUri() .'views/css/back.css',['media' => 'all', 'priority' => 150]
         );
