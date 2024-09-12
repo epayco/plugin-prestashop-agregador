@@ -128,7 +128,8 @@ class Epayco_agregador extends PaymentModule
 
     public function hookDisplayHeader()
     {
-        $this->context->controller->registerJavascript('epayco-checkout', 'https://epayco-checkout-testing.s3.amazonaws.com/checkout.preprod.js', ['position' => 'bottom', 'priority' => 150]);        $this->context->controller->registerStylesheet(
+        $this->context->controller->registerJavascript('epayco-checkout', 'https://epayco-checkout-testing.s3.amazonaws.com/checkout.preprod.js', ['position' => 'bottom', 'priority' => 150]);
+        $this->context->controller->registerStylesheet(
             'epayco-checkout-css',
             $this->getPathUri() . 'views/css/back.css',
             ['media' => 'all', 'priority' => 150]
@@ -610,9 +611,9 @@ class Epayco_agregador extends PaymentModule
             $lang = $this->context->language->language_code;
 
             if ($lang == "es") {
-                $url_button = $this->getPathUri() . 'views/img/Boton-color-Ingles.png';
+                $url_button = 'https://multimedia-epayco.s3.amazonaws.com/plugins-sdks/Boton-color-Ingles.png';
             } else {
-                $url_button = $this->getPathUri() . 'views/img/Boton-color-espanol.png';
+                $url_button = 'https://multimedia-epayco.s3.amazonaws.com/plugins-sdks/Boton-color-espanol.png';
                 $lang = "en";
             }
 
@@ -807,11 +808,12 @@ class Epayco_agregador extends PaymentModule
             $myIp = $this->getCustomerIp();
             $lang = $this->context->language->language_code;
             if ($lang == "es") {
-                $url_button = $this->getPathUri() . ' views/img/Boton-color-Ingles.png';
+                $url_button = 'https://multimedia-epayco.s3.amazonaws.com/plugins-sdks/Boton-color-Ingles.png';
             } else {
-                $url_button = $this->getPathUri() . 'views/img/Boton-color-espanol.png';
+                $url_button = 'https://multimedia-epayco.s3.amazonaws.com/plugins-sdks/Boton-color-espanol.png';
                 $lang = "en";
             }
+
             $this->smarty->assign(
                 array(
                     'this_path_bw' => $this->_path,
@@ -885,7 +887,7 @@ class Epayco_agregador extends PaymentModule
             if (isset($_REQUEST["ref_payco"])) {
                 $ref_payco = $_REQUEST["ref_payco"];
             }
-            $url = 'https://secure.epayco.io/validation/v1/reference/'.$ref_payco;
+            $url = 'https://secure.epayco.io/validation/v1/reference/' . $ref_payco;
         }
 
         if ($ref_payco != "" and $url != "") {
