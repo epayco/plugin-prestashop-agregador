@@ -677,10 +677,9 @@ class Epayco_agregador extends PaymentModule
         if (!$this->checkCurrency($params['cart'])) {
             return;
         }
-           $module_dir = __PS_BASE_URI__ . 'modules/' . $this->name . '/';
         $this->context->smarty->assign(array(
             "titulo" => $this->p_titulo_agregador,
-            "logo_url" => $module_dir . 'logoepayco.svg'
+            "logo_url" => 'https://multimedia-epayco.s3.amazonaws.com/plugins-sdks/paymentLogo.svg'
         ));
         $modalOption = new PrestaShop\PrestaShop\Core\Payment\PaymentOption();
         $modalOption->setCallToActionText($this->l('Pagar con ePayco'))
