@@ -37,7 +37,7 @@
 </a>
 </center>
 <form id="epayco_form" style="text-align: center;">
-     <script src="https://checkout.epayco.co/checkout.js"></script>
+      <script src="https://checkout.epayco.co/checkout.js"></script>
      <script>
      var handler = ePayco.checkout.configure({
             key: "{$public_key_agregador}",
