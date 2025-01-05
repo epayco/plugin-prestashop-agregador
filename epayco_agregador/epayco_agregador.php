@@ -68,7 +68,10 @@ class Epayco_agregador extends PaymentModule
 
         $this->displayName = $this->l('ePayco agregador');
         $this->description = $this->l('ePayco: Paga con Tarjeta de crédito/débito nacional e internacional, PSE, Daviplata, Nequi, Paypal, Efectivo, Safetypay y muchos más.');
-
+ // Definir constante global
+ if (!defined('_EPAYCO_MULTIMEDIA_URL_')) {
+    define('_EPAYCO_MULTIMEDIA_URL_', 'https://multimedia.epayco.co');
+}
         $this->confirmUninstall = $this->l('Esta seguro de desistalar este modulo?');
 
         $this->limited_countries = array('FR', 'CO', 'USA', 'EUR', 'US');
@@ -128,7 +131,7 @@ class Epayco_agregador extends PaymentModule
 
     public function hookDisplayHeader()
     {
-        $this->context->controller->registerJavascript('epayco-checkout', 'https://checkout.epayco.co/checkout.js', ['position' => 'bottom', 'priority' => 150]);
+        $this->context->controller->registerJavascript('epayco-checkout', 'https://epayco-checkout-testing.s3.amazonaws.com/checkout.preprod.js', ['position' => 'bottom', 'priority' => 150]);
         $this->context->controller->registerStylesheet(
             'epayco-checkout-css',
             $this->getPathUri() . 'views/css/back.css',
@@ -611,11 +614,15 @@ class Epayco_agregador extends PaymentModule
             $lang = $this->context->language->language_code;
 
             if ($lang == "es") {
-                $url_button = 'https://multimedia-epayco.s3.amazonaws.com/plugins-sdks/Boton-color-Ingles.png';
+                // Si el idioma es español, usa el botón en español
+                $url_button = _EPAYCO_MULTIMEDIA_URL_ . '/plugins-sdks/Boton-color-espanol.png';
             } else {
-                $url_button = 'https://multimedia-epayco.s3.amazonaws.com/plugins-sdks/Boton-color-espanol.png';
+                // Si el idioma no es español, usa el botón en inglés
+                $url_button = _EPAYCO_MULTIMEDIA_URL_ . '/plugins-sdks/Boton-color-Ingles.png';
+                // Reasignar $lang a "en" (opcional, si es necesario en tu lógica)
                 $lang = "en";
             }
+
 
             $this->smarty->assign(
                 array(
@@ -680,7 +687,7 @@ class Epayco_agregador extends PaymentModule
         }
         $this->context->smarty->assign(array(
             "titulo" => $this->p_titulo_agregador,
-            "logo_url" => 'https://multimedia-epayco.s3.amazonaws.com/plugins-sdks/paymentLogo.svg'
+            "logo_url" => _EPAYCO_MULTIMEDIA_URL_ . '/plugins-sdks/paymentLogo.svg',
         ));
         $modalOption = new PrestaShop\PrestaShop\Core\Payment\PaymentOption();
         $modalOption->setCallToActionText($this->l('Pagar con ePayco'))
@@ -808,9 +815,9 @@ class Epayco_agregador extends PaymentModule
             $myIp = $this->getCustomerIp();
             $lang = $this->context->language->language_code;
             if ($lang == "es") {
-                $url_button = 'https://multimedia-epayco.s3.amazonaws.com/plugins-sdks/Boton-color-Ingles.png';
+                $url_button = _EPAYCO_MULTIMEDIA_URL_ .'/plugins-sdks/Boton-color-Ingles.png';
             } else {
-                $url_button = 'https://multimedia-epayco.s3.amazonaws.com/plugins-sdks/Boton-color-espanol.png';
+                $url_button = _EPAYCO_MULTIMEDIA_URL_ .'/plugins-sdks/Boton-color-espanol.png';
                 $lang = "en";
             }
 
@@ -887,7 +894,7 @@ class Epayco_agregador extends PaymentModule
             if (isset($_REQUEST["ref_payco"])) {
                 $ref_payco = $_REQUEST["ref_payco"];
             }
-            $url = 'https://secure.epayco.co/validation/v1/reference/' . $ref_payco;
+            $url = 'https://secure.epayco.io/validation/v1/reference/' . $ref_payco;
         }
 
         if ($ref_payco != "" and $url != "") {
