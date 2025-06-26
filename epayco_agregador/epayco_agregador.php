@@ -46,6 +46,7 @@ class Epayco_agregador extends PaymentModule
     public $public_key_agregador;
     public $private_key_agregador;
     public $p_test_request_agregador;
+    public $lenguaje;
     public $p_type_checkout_agregador;
     public $p_url_response_agregador;
     public $p_url_confirmation_agregador;
@@ -55,7 +56,7 @@ class Epayco_agregador extends PaymentModule
     {
         $this->name = 'epayco_agregador';
         $this->tab = 'payments_gateways';
-        $this->version = '1.8.0.1';
+        $this->version = '1.8.0.2';
         $this->author = 'ePayco';
         $this->need_instance = 1;
 
@@ -68,10 +69,15 @@ class Epayco_agregador extends PaymentModule
 
         $this->displayName = $this->l('ePayco agregador');
         $this->description = $this->l('ePayco: Paga con Tarjeta de crédito/débito nacional e internacional, PSE, Daviplata, Nequi, Paypal, Efectivo, Safetypay y muchos más.');
-        // Definir constante global
+      
         if (!defined('_EPAYCO_MULTIMEDIA_URL_')) {
             define('_EPAYCO_MULTIMEDIA_URL_', 'https://multimedia.epayco.co');
         }
+
+        if (!defined('_EPAYCO_MULTIMEDIA_URL_PREPRO')) {
+            define('_EPAYCO_MULTIMEDIA_URL_PREPRO', 'https://multimedia-epayco-preprod.s3.us-east-1.amazonaws.com');
+        }
+
         $this->confirmUninstall = $this->l('Esta seguro de desistalar este modulo?');
 
         $this->limited_countries = array('FR', 'CO', 'USA', 'EUR', 'US');
@@ -88,6 +94,7 @@ class Epayco_agregador extends PaymentModule
             'P_TITULO_agregador',
             'P_URL_RESPONSE_agregador',
             'P_TYPE_CHECKOUT_agregador',
+            'LENGUAJE',
             'P_REDUCE_STOCK_PENDING',
             'P_URL_CONFIRMATION_agregador',
             'P_STATE_END_TRANSACTION_agregador'
@@ -103,6 +110,8 @@ class Epayco_agregador extends PaymentModule
             $this->private_key_agregador = trim($config['PRIVATE_KEY_agregador']);
         if (isset($config['P_TEST_REQUEST_agregador']))
             $this->p_test_request_agregador = $config['P_TEST_REQUEST_agregador'];
+         if (isset($config['LENGUAJE']))
+            $this->p_test_request_agregador = $config['LENGUAJE'];
         if (isset($config['P_TITULO_agregador']))
             $this->p_titulo_agregador = trim($config['P_TITULO_agregador']);
         if (isset($config['P_URL_RESPONSE_agregador']))
@@ -167,6 +176,7 @@ class Epayco_agregador extends PaymentModule
         Configuration::updateValue('PUBLIC_KEY_agregador', '');
         Configuration::updateValue('PRIVATE_KEY_agregador', '');
         Configuration::updateValue('P_TEST_REQUEST_agregador', false);
+        Configuration::updateValue('LENGUAJE', false);
         Configuration::updateValue('P_REDUCE_STOCK_PENDING', true);
         Configuration::updateValue('P_URL_RESPONSE_agregador', Context::getContext()->link->getModuleLink('epayco_agregador', 'response'));
         Configuration::updateValue('P_URL_CONFIRMATION_agregador', Context::getContext()->link->getModuleLink('epayco_agregador', 'response'));
@@ -207,6 +217,7 @@ class Epayco_agregador extends PaymentModule
         Configuration::deleteByName('PUBLIC_KEY_agregador');
         Configuration::deleteByName('PRIVATE_KEY_agregador');
         Configuration::deleteByName('P_TEST_REQUEST_agregador');
+        Configuration::deleteByName('LENGUAJE');
         Configuration::deleteByName('P_URL_RESPONSE_agregador');
         Configuration::deleteByName('P_URL_CONFIRMATION_agregador');
         Configuration::deleteByName('P_TYPE_CHECKOUT_agregador');
@@ -371,6 +382,24 @@ class Epayco_agregador extends PaymentModule
                     ),
                     array(
                         'type' => 'radio',
+                        'label' => $this->trans('Idioma del checkout', array(), 'Modules.Payment.Admin'),
+                        'name' => "LENGUAJE",
+                        'is_bool' => true,
+                        'values' => array(
+                            array(
+                                'id' => 'LANGUAJE_ES',
+                                'value' => true,
+                                'label' => $this->trans('Español', array(), 'Modules.Payment.Admin'),
+                            ),
+                            array(
+                                'id' => 'LANGUAJE_EN',
+                                'value' => false,
+                                'label' => $this->trans('Ingles', array(), 'Modules.Payment.Admin'),
+                            )
+                        ),
+                    ),
+                    array(
+                        'type' => 'radio',
                         'label' => $this->trans('Tipo de checkout ePayco', array(), 'Modules.Epayco_agregador.Admin'),
                         'name' => "P_TYPE_CHECKOUT_agregador",
                         'is_bool' => true,
@@ -444,6 +473,7 @@ class Epayco_agregador extends PaymentModule
             'PRIVATE_KEY_agregador' => Tools::getValue('PRIVATE_KEY_agregador', Configuration::get('PRIVATE_KEY_agregador')),
             'P_TEST_REQUEST_agregador' => Tools::getValue('P_TEST_REQUEST_agregador', Configuration::get('P_TEST_REQUEST_agregador')),
             'P_TYPE_CHECKOUT_agregador' => Tools::getValue('P_TYPE_CHECKOUT_agregador', Configuration::get('P_TYPE_CHECKOUT_agregador')),
+            'P_LENGUAJE' => Tools::getValue('LENGUAJE', Configuration::get('LENGUAJE')),
             'P_URL_RESPONSE_agregador' => Tools::getValue('P_URL_RESPONSE_agregador', Configuration::get('P_URL_RESPONSE_agregador')),
             'P_URL_CONFIRMATION_agregador' => Tools::getValue('P_URL_CONFIRMATION_agregador', Configuration::get('P_URL_CONFIRMATION_agregador')),
             'P_STATE_END_TRANSACTION_agregador' => Tools::getValue('P_STATE_END_TRANSACTION_agregador', Configuration::get('P_STATE_END_TRANSACTION_agregador')),
@@ -497,6 +527,7 @@ class Epayco_agregador extends PaymentModule
             Configuration::updateValue('PUBLIC_KEY_agregador', Tools::getValue('PUBLIC_KEY_agregador'));
             Configuration::updateValue('PRIVATE_KEY_agregador', Tools::getValue('PRIVATE_KEY_agregador'));
             Configuration::updateValue('P_TEST_REQUEST_agregador', Tools::getValue('P_TEST_REQUEST_agregador'));
+            Configuration::updateValue('LENGUAJE', Tools::getValue('LENGUAJE'));
             Configuration::updateValue('P_TITULO_agregador', $p_titulo_agregador);
             Configuration::updateValue('P_URL_RESPONSE_agregador', $p_url_response_agregador);
             Configuration::updateValue('P_URL_CONFIRMATION_agregador', $p_url_confirmation_agregador);
@@ -607,23 +638,22 @@ class Epayco_agregador extends PaymentModule
                 $external = "true";
             }
 
-            $myIp = $this->getCustomerIp();
+
             //definir la url de respuesta y confirmacion segun la defina el usuario
             $p_url_response_agregador = Context::getContext()->link->getModuleLink('epayco_agregador', 'response');
             $p_url_confirmation_agregador = Context::getContext()->link->getModuleLink('epayco_agregador', 'confirmation');
-            $lang = $this->context->language->language_code;
-
-            if ($lang == "es") {
-                // Si el idioma es español, usa el botón en español
+           
+            $lenguaje = Configuration::get('LENGUAJE');
+            if ($lenguaje) {
+                $lang = "es";
                 $url_button = _EPAYCO_MULTIMEDIA_URL_ . '/plugins-sdks/Boton-color-espanol.png';
             } else {
-                // Si el idioma no es español, usa el botón en inglés
-                $url_button = _EPAYCO_MULTIMEDIA_URL_ . '/plugins-sdks/Boton-color-Ingles.png';
-                // Reasignar $lang a "en" (opcional, si es necesario en tu lógica)
                 $lang = "en";
+                $url_button = _EPAYCO_MULTIMEDIA_URL_ . '/plugins-sdks/Boton-color-Ingles.png';
             }
 
-
+            
+            $myIp = $this->getCustomerIp();
             $this->smarty->assign(
                 array(
                     'this_path_bw' => $this->_path,
@@ -687,7 +717,7 @@ class Epayco_agregador extends PaymentModule
         }
         $this->context->smarty->assign(array(
             "titulo" => $this->p_titulo_agregador,
-            "logo_url" => _EPAYCO_MULTIMEDIA_URL_ . '/plugins-sdks/paymentLogo.svg',
+            "logo_url" => _EPAYCO_MULTIMEDIA_URL_PREPRO . '/plugins-sdks/22mediodepago+.png',
         ));
         $modalOption = new PrestaShop\PrestaShop\Core\Payment\PaymentOption();
         $modalOption->setCallToActionText($this->l('Pagar con ePayco'))
@@ -812,18 +842,17 @@ class Epayco_agregador extends PaymentModule
             //definir la url de respuesta y confirmacion segun la defina el usuario
             $p_url_response_agregador = Context::getContext()->link->getModuleLink('epayco_agregador', 'response');
             $p_url_confirmation_agregador = Context::getContext()->link->getModuleLink('epayco_agregador', 'confirmation');
-            $myIp = $this->getCustomerIp();
 
-            $lang = $this->context->language->language_code;
-
-            if ($lang == "es") {
-                // Si el idioma es español, asigna el botón en español
+              $lenguaje = Configuration::get('LENGUAJE');
+            if ($lenguaje) {
+                $lang = "es";
                 $url_button = _EPAYCO_MULTIMEDIA_URL_ . '/plugins-sdks/Boton-color-espanol.png';
             } else {
-                // Para cualquier otro idioma, asigna el botón en inglés
+                $lang = "en";
                 $url_button = _EPAYCO_MULTIMEDIA_URL_ . '/plugins-sdks/Boton-color-Ingles.png';
-                $lang = "en"; // Asegúrate de que el idioma sea 'en' en caso de no ser español
             }
+
+            $myIp = $this->getCustomerIp();
 
             $this->smarty->assign(
                 array(

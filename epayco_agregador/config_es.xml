@@ -2,7 +2,7 @@
 <module>
     <name>epayco_agregador</name>
     <displayName><![CDATA[ePayco agregador]]></displayName>
-    <version><![CDATA[1.8.0.1]]></version>
+    <version><![CDATA[1.8.0.2]]></version>
     <description><![CDATA[ePayco: Paga con Tarjeta de crédito/débito nacional e internacional, PSE, Daviplata, Nequi, Paypal, Efectivo, Safetypay y muchos más.]]></description>
     <author><![CDATA[ePayco]]></author>
     <tab><![CDATA[payments_gateways]]></tab>

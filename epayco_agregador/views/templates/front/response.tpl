@@ -99,7 +99,7 @@
                                 <div class="container">
                                     <div class="col-lg-8 col-lg-offset-2" style="display: flex; justify-content: center; margin-top: 10px;">
                                         <img 
-                                            src="{constant('_EPAYCO_MULTIMEDIA_URL_')}/plugins-sdks/paymentLogo.svg" 
+                                            src="{constant('_EPAYCO_MULTIMEDIA_URL_PREPRO')}/plugins-sdks/22mediodepago+.png" 
                                             alt="Logo de ePayco" 
                                             style="max-width: 100%; height: auto; width: 100%; max-height: 730px;" 
                                         >
