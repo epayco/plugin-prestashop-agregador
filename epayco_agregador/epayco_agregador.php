@@ -990,14 +990,14 @@ class Epayco_agregador extends PaymentModule
                 } else {
                     if ($confirmation && $x_cod_response == 3 && Epayco_agregadorOrder::ifStockDiscount($order->id)) {
                         if (!$validacionOrderName) {
-                            $this->RestoreStock($order, '-');
+                            //$this->RestoreStock($order, '-');
                         }else{
                             $orderStatus = Db::getInstance()->executeS('
                             SELECT name FROM `' . _DB_PREFIX_ . 'order_state_lang`
                             WHERE `id_order_state` = ' . (int)$current_state);
                             $orderStatusName = $orderStatus[0]['name'];
                             if($orderStatusName == "ePayco Pago Rechazado de Prueba" || $orderStatusName == "ePayco Pago Rechazado"){
-                                $this->RestoreStock($order, '-');
+                               // $this->RestoreStock($order, '-');
                             }
                         }
                     }
