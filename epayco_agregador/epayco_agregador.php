@@ -215,7 +215,7 @@ class Epayco_agregador extends PaymentModule
 
         // Configuration::deleteByName('epayco_agregador', false);
 
-        //Epayco_agregadorOrder::remove();
+        Epayco_agregadorOrder::remove();
         include(dirname(__FILE__) . '/sql/uninstall.php');
 
         return parent::uninstall();
