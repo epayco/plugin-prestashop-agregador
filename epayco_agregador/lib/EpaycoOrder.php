@@ -35,7 +35,7 @@ class Epayco_agregadorOrder extends ObjectModel{
 		
 		$db = Db::getInstance();
 			$result = $db->execute('
-			INSERT INTO `'._DB_PREFIX_.'payco_agregador`
+			INSERT INTO `'.Epayco_agregadorOrder::$definition['table'].'`
 			( `order_id`, `order_stock_restore` )
 			VALUES
 			("'.intval($orderId).'","'.$stock.'")');
@@ -66,8 +66,12 @@ class Epayco_agregadorOrder extends ObjectModel{
 		$result = $db->getRow('
 			SELECT `order_stock_discount` FROM `'.Epayco_agregadorOrder::$definition['table'].'`
 			WHERE `order_id` = "'.intval($orderId).'"');
+	
+		if ($result === false || !is_array($result) || !isset($result["order_stock_discount"])) {
+        	//return false; // No se encontró el registro o no tiene el campo
+    	}
 
-		return intval($result["order_stock_discount"]) != 0 ? true : false;
+    	return intval($result["order_stock_discount"]) != 0 ? true : false;
 		
 	}
 
@@ -90,7 +94,7 @@ class Epayco_agregadorOrder extends ObjectModel{
 	public static function setup()
 	{
 		$sql = array();
-		$sql[] = 'CREATE TABLE IF NOT EXISTS `'._DB_PREFIX_.'payco_agregador` (
+		$sql[] = 'CREATE TABLE IF NOT EXISTS `'.Epayco_agregadorOrder::$definition['table'].'` (
 		    `id` int(11) NOT NULL AUTO_INCREMENT,
 		    `id_payco` INT(11) NULL,
 		    `order_id` INT NULL,
@@ -113,7 +117,7 @@ class Epayco_agregadorOrder extends ObjectModel{
 	 */
 	public static function remove(){
 		$sql = array(
-				'DROP TABLE IF EXISTS '._DB_PREFIX_.'payco_agregador'
+				'DROP TABLE IF EXISTS '.Epayco_agregadorOrder::$definition['table']
 		);
 
 		foreach ($sql as $query) {
