@@ -690,6 +690,26 @@ class Epayco_agregador extends PaymentModule
             $sessionId = null;
             if(isset($checkoutSessionResponse['success'])){
                 $sessionId = $checkoutSessionResponse["data"]['sessionId'];
+            }else{
+                $messageError = $checkoutSessionResponse['textResponse'];
+                $errorMessage = "";
+                if (isset($checkoutSessionResponse['data']['errors'])) {
+                    $errors = $checkoutSessionResponse['data']['errors'];
+                    if(is_array($errors)){
+                        foreach ($errors as $error) {
+                            $errorMessage = $error['errorMessage'] . "\n";
+                        }
+                    }else{
+                        $errorMessage = $errors. "\n";
+                    }
+                } elseif (isset($epayco_status_session['data']['error']['errores'])) {
+                    $errores = $epayco_status_session['data']['error']['errores'];
+                    foreach ($errores as $error) {
+                        $errorMessage = $error['errorMessage'] . "\n";
+                    }
+                }
+                //$processReturnFailMessage = $messageError . " " . $errorMessage;
+                $processReturnFailMessage =  $errorMessage; 
             }
 
             $payload = array(
@@ -704,7 +724,8 @@ class Epayco_agregador extends PaymentModule
                     'this_path_bw' => $this->_path,
                     'checkout' => $checkout,
                     'status' => isset($sessionId) ? 'ok' : 'fail',
-                    'url_button' => $url_button
+                    'url_button' => $url_button,
+                    'errorMessage' => isset($processReturnFailMessage) ? $processReturnFailMessage : ''
                 )
             );
         } else {
