@@ -78,8 +78,21 @@
     });
 </script>
 {else}
-<p class="warning">
-  {l s='Hemos notado un problema con tu orden, si crees que es un error puedes contactar a nuestro departamento de Soporte' mod='epayco_agregador'}
-  {l s='' mod='epayco_agregador'}.
-</p>
+
+<div style="
+        display: flex;
+        align-items: center;
+        flex-direction: column;
+    ">
+    <div>
+    <img style="width: 80px;" src="https://multimedia-epayco-preprod.s3.us-east-1.amazonaws.com/plugins-sdks/warning.png" alt="" />
+    </div>
+    <div 
+    style="text-align: center;font-size: large;font-weight: 900;">
+        <p class="warning">
+            {l s='Hemos notado un problema con tu orden, solicitamos contactar a nuestro departamento de Soporte' mod='epayco_agregador'}
+            {l s='{$errorMessage}' mod='epayco_agregador'}.
+        </p>
+    </div>
+</div>
 {/if}
