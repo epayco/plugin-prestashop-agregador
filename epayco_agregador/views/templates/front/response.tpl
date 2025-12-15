@@ -71,10 +71,6 @@
                                                 <td>Motivo</td>
                                                 <td id="motivo"></td>
                                             </tr>
-                                            <tr>
-                                                <td class="bold">Banco</td>
-                                                <td class="" id="banco">
-                                                </tr>
                                                 <tr>
                                                     <td class="bold">Recibo</td>
                                                     <td id="recibo"></td>
