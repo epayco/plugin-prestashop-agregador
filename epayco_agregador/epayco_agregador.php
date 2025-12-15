@@ -758,7 +758,7 @@ class Epayco_agregador extends PaymentModule
             $data = array(
                 'public_key' => $publicKey
             );
-            $url = 'https://eks-apify-service.epayco.io/login';
+            $url = 'https://apify.epayco.co/login';
             //return $this->epayco_realizar_llamada_api("login", [], $headers);
             $responseData = $this->PostCurl($url, $data, $headers);
             $jsonData = @json_decode($responseData, true);
@@ -771,7 +771,7 @@ class Epayco_agregador extends PaymentModule
                 'Authorization: Bearer '.$bearer_token
         );
 
-        $url = 'https://eks-apify-service.epayco.io/payment/session/create';
+        $url = 'https://apify.epayco.co/payment/session/create';
         $responseData = $this->PostCurl($url, $body, $headers);
         $jsonData = @json_decode($responseData, true);
         return $jsonData;
@@ -871,7 +871,7 @@ class Epayco_agregador extends PaymentModule
             if (isset($_REQUEST["ref_payco"])) {
                 $ref_payco = $_REQUEST["ref_payco"];
             }
-            $url = 'https://eks-checkout-service.epayco.io/validation/v1/reference/' . $ref_payco;
+            $url = 'https://secure.epayco.co/validation/v1/reference/' . $ref_payco;
         }
 
         if ($ref_payco != "" and $url != "") {
