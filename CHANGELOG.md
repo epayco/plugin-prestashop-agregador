@@ -9,6 +9,9 @@ y este proyecto adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.0.h
 
 ### Changed
 
+- Cambio de marca ePayco → Davipay en textos visibles, logotipo, configuración y estados de pedido.
+- Actualización de la marca almacenada en instalaciones existentes al actualizar a la versión 2.0.0.0.
+
 - **23 de octubre de 2025** - Actualización de campos para versión 2 del checkout
   - Actualizado el archivo `response.tpl` para mejorar la configuración del componente DetailPurchase
   - Corregida la concatenación de URL completa en el campo `returnUrl` usando JavaScript

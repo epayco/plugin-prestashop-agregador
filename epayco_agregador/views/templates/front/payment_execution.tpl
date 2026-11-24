@@ -24,7 +24,7 @@
 *  International Registered Trademark & Property of PrestaShop SA
 *}
 
-{capture name=path}{l s='Payco payment.' mod='epayco_agregador'}{/capture}
+{capture name=path}{l s='Davipay payment.' mod='epayco_agregador'}{/capture}
 <div class="col-xs-12 col-sm-12 col-md-12">
 	<div class="wrap">
 		<h1 class="page-heading">{l s='RESUMEN DEL PEDIDO' mod='epayco_agregador'}</h1>
@@ -36,9 +36,9 @@
 		<form action="{$link->getModuleLink('epayco_agregador', 'validation', [], true)|escape:'html'}" method="post">
 			<div class="box cheque-box">
 				<h3 class="page-subheading" style="text-align: center; font-size: 10px;">
-					<img src="boton.png" alt="{l s='ePayco' mod='epayco_agregador'}"/>
+					<img src="{constant('DAVIPAY_ROUTE_IMAGES_S3')}Imagotipo/checkoutSmallWhite_01_v1.svg" alt="{l s='Davipay' mod='epayco_agregador'}"/>
 					<div>
-						{l s='Ha elegido pagar con ePayco.' mod='epayco_agregador'}
+						{l s='Ha elegido pagar con Davipay.' mod='epayco_agregador'}
 					</div>
 				</h3>
 				<div>

@@ -29,11 +29,11 @@
 </div>
 <p style="text-align: center;" class="epayco-title">
     <span class="animated-points">Cargando métodos de pago</span>
-   <br><small class="epayco-subtitle"> Si no se cargan automáticamente, de clic en el botón "Pagar con ePayco"</small>
+   <br><small class="epayco-subtitle"> Si no se cargan automáticamente, de clic en el botón "{$button_label|escape:'htmlall':'UTF-8'}"</small>
 </p>
 <center>
 <a id="btn_epayco" href="#">
-    <img src="{$url_button|escape:'htmlall':'UTF-8'}">
+    <img src="{$url_button|escape:'htmlall':'UTF-8'}" alt="{$button_label|escape:'htmlall':'UTF-8'}">
 </a>
 </center>
 <form id="epayco_form" style="text-align: center;">

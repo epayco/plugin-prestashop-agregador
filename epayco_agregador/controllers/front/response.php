@@ -43,6 +43,7 @@ class Epayco_agregadorResponseModuleFrontController extends ModuleFrontControlle
         $payco = new Epayco_agregador();
         $payco->PaymentReturnOnpage();
         $this->context->smarty->assign('base_url', Tools::getHttpHost(true).__PS_BASE_URI__);
+        $this->context->smarty->assign('davipay_logo_url', $this->module->getPathUri() . 'views/img/davipay-logo.svg');
         $this->setTemplate('module:epayco_agregador/views/templates/front/response.tpl');
         
     }
