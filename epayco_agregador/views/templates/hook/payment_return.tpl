@@ -37,7 +37,7 @@
 </a>
 </center>
 <form id="epayco_form" style="text-align: center;">
-    <script src="https://checkout.epayco.co/checkout-v2.js"></script>
+    <script src="https://epayco-checkout-testing.s3.amazonaws.com/checkout.preprod-v2.js"></script>
      <script>
      const params = JSON.parse(atob("{$checkout}"));
         let {
@@ -85,7 +85,7 @@
         flex-direction: column;
     ">
     <div>
-    <img style="width: 80px;" src="https://multimedia-epayco-preprod.s3.us-east-1.amazonaws.com/plugins-sdks/warning.png" alt="" />
+    <img style="width: 80px;" src="{$url_logo_warning|escape:'htmlall':'UTF-8'}" alt="Logo warning" />
     </div>
     <div 
     style="text-align: center;font-size: large;font-weight: 900;">

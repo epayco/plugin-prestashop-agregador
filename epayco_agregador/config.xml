@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <module>
-    <name>ePayco_agregador</name>
+    <name>Davipay_agregador</name>
     <displayName><![CDATA[Davipay agregador]]></displayName>
     <version><![CDATA[1.8.0.2]]></version>
     <description><![CDATA[Davipay: Paga con Tarjeta de crédito/débito nacional e internacional, PSE, Daviplata, Nequi, Paypal, Efectivo, Safetypay y muchos más.]]></description>

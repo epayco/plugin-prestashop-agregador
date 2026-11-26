@@ -1,4 +1,4 @@
-# Davipay Agregador plugin para PrestaShop v1.6.1.6 o superior
+# Davipay Agregador plugin para PrestaShop v1.7.0.0 o superior
 
 **Si usted tiene alguna pregunta o problema, no dude en ponerse en contacto con nuestro soporte técnico: desarrollo@epayco.com o desarrolladores@epayco.com.**
 

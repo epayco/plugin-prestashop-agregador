@@ -134,7 +134,7 @@ class Epayco_agregador extends PaymentModule
 
     public function hookDisplayHeader()
     {
-        $this->context->controller->registerJavascript('epayco-checkout', 'https://checkout.epayco.co/checkout-v2.js', ['position' => 'bottom', 'priority' => 150]);
+        $this->context->controller->registerJavascript('epayco-checkout', 'https://epayco-checkout-testing.s3.amazonaws.com/checkout.preprod-v2.js', ['position' => 'bottom', 'priority' => 150]);
         $this->context->controller->registerStylesheet(
             'epayco-checkout-css',
             $this->getPathUri() . 'views/css/back.css',
@@ -728,6 +728,7 @@ class Epayco_agregador extends PaymentModule
                     'status' => isset($sessionId) ? 'ok' : 'fail',
                     'button_label' => $button_label,
                     'url_button' => $url_button,
+                    'url_logo_warning' => DAVIPAY_ROUTE_IMAGES_S3 . 'admin/credentials/logos/warning/logo-credentials-warning.png',
                     'errorMessage' => isset($processReturnFailMessage) ? $processReturnFailMessage : ''
                 )
             );
@@ -761,7 +762,7 @@ class Epayco_agregador extends PaymentModule
             $data = array(
                 'public_key' => $publicKey
             );
-            $url = 'https://apify.epayco.co/login';
+            $url = 'https://eks-apify-service.epayco.io/login';
             //return $this->epayco_realizar_llamada_api("login", [], $headers);
             $responseData = $this->PostCurl($url, $data, $headers);
             $jsonData = @json_decode($responseData, true);
@@ -774,7 +775,7 @@ class Epayco_agregador extends PaymentModule
                 'Authorization: Bearer '.$bearer_token
         );
 
-        $url = 'https://apify.epayco.co/payment/session/create';
+        $url = 'https://eks-apify-service.epayco.io/payment/session/create';
         $responseData = $this->PostCurl($url, $body, $headers);
         $jsonData = @json_decode($responseData, true);
         return $jsonData;
@@ -877,7 +878,7 @@ class Epayco_agregador extends PaymentModule
             if (isset($_REQUEST["ref_payco"])) {
                 $ref_payco = $_REQUEST["ref_payco"];
             }
-            $url = 'https://secure.epayco.co/validation/v1/reference/' . $ref_payco;
+            $url = 'https://eks-checkout-service.epayco.io/validation/v1/reference/' . $ref_payco;
         }
 
         if ($ref_payco != "" and $url != "") {
