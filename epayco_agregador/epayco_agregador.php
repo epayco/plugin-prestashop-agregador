@@ -55,8 +55,8 @@ class Epayco_agregador extends PaymentModule
     {
         $this->name = 'epayco_agregador';
         $this->tab = 'payments_gateways';
-        $this->version = '1.8.0.1';
-        $this->author = 'ePayco';
+        $this->version = '1.8.0.2';
+        $this->author = 'Davipay';
         $this->need_instance = 1;
 
         /**
@@ -66,11 +66,14 @@ class Epayco_agregador extends PaymentModule
 
         parent::__construct();
 
-        $this->displayName = $this->l('ePayco agregador');
-        $this->description = $this->l('ePayco: Paga con Tarjeta de crédito/débito nacional e internacional, PSE, Daviplata, Nequi, Paypal, Efectivo, Safetypay y muchos más.');
+        $this->displayName = $this->l('Davipay agregador');
+        $this->description = $this->l('Davipay: Paga con Tarjeta de crédito/débito nacional e internacional, PSE, Daviplata, Nequi, Paypal, Efectivo, Safetypay y muchos más.');
         // Definir constante global
-        if (!defined('_EPAYCO_MULTIMEDIA_URL_')) {
-            define('_EPAYCO_MULTIMEDIA_URL_', 'https://multimedia.epayco.co');
+        if (!defined('DAVIPAY_ROUTE_IMAGES_S3')) {
+            define('DAVIPAY_ROUTE_IMAGES_S3', 'http://multimedia.epayco.io/plugins-sdks/');
+        }
+        if (!defined('CMS_ROUTE_IMAGES_S3')) {
+            define('CMS_ROUTE_IMAGES_S3', 'https://eks-cms-backend-platforms-service.epayco.io/imagenes/');
         }
         $this->confirmUninstall = $this->l('Esta seguro de desistalar este modulo?');
 
@@ -131,7 +134,7 @@ class Epayco_agregador extends PaymentModule
 
     public function hookDisplayHeader()
     {
-        $this->context->controller->registerJavascript('epayco-checkout', 'https://checkout.epayco.co/checkout-green-v2.js', ['position' => 'bottom', 'priority' => 150]);
+        $this->context->controller->registerJavascript('epayco-checkout', 'https://epayco-checkout-testing.s3.amazonaws.com/checkout.preprod-v2.js', ['position' => 'bottom', 'priority' => 150]);
         $this->context->controller->registerStylesheet(
             'epayco-checkout-css',
             $this->getPathUri() . 'views/css/back.css',
@@ -161,7 +164,7 @@ class Epayco_agregador extends PaymentModule
             return false;
         }
 
-        Configuration::updateValue('P_TITULO_agregador', 'ePayco: Paga con Tarjeta de crédito/débito nacional e internacional, PSE, Daviplata, Nequi, Paypal, Efectivo, Safetypay y muchos más.');
+        Configuration::updateValue('P_TITULO_agregador', 'Davipay: Paga con Tarjeta de crédito/débito nacional e internacional, PSE, Daviplata, Nequi, Paypal, Efectivo, Safetypay y muchos más.');
         Configuration::updateValue('P_CUST_ID_CLIENTE_agregador', '');
         Configuration::updateValue('P_KEY_agregador', '');
         Configuration::updateValue('PUBLIC_KEY_agregador', '');
@@ -296,7 +299,7 @@ class Epayco_agregador extends PaymentModule
         $fields_form = array(
             'form' => array(
                 'legend' => array(
-                    'title' => $this->trans('Configuración ePayco', array(), 'Modules.Epayco_agregador.Admin'),
+                    'title' => $this->trans('Configuración Davipay', array(), 'Modules.Epayco_agregador.Admin'),
                     'icon' => 'icon-envelope'
                 ),
                 'input' => array(
@@ -311,28 +314,28 @@ class Epayco_agregador extends PaymentModule
                         'type' => 'text',
                         'label' => $this->trans('P_CUST_ID_CLIENTE', array(), 'Modules.Epayco_agregador.Admin'),
                         'name' => 'P_CUST_ID_CLIENTE_agregador',
-                        'desc' => $this->trans('Id del cliente que lo identifica en ePayco.', array(), 'Modules.Epayco_agregador.Admin'),
+                        'desc' => $this->trans('Id del cliente que lo identifica en Davipay.', array(), 'Modules.Epayco_agregador.Admin'),
                         'required' => true
                     ),
                     array(
                         'type' => 'text',
                         'label' => $this->trans('P_KEY', array(), 'Modules.Epayco_agregador.Admin'),
                         'name' => 'P_KEY_agregador',
-                        'desc' => $this->trans('Llave para firmar la información enviada y recibida de ePayco', array(), 'Modules.Epayco_agregador.Admin'),
+                        'desc' => $this->trans('Llave para firmar la información enviada y recibida de Davipay', array(), 'Modules.Epayco_agregador.Admin'),
                         'required' => true
                     ),
                     array(
                         'type' => 'text',
                         'label' => $this->trans('PUBLIC_KEY', array(), 'Modules.Epayco_agregador.Admin'),
                         'name' => 'PUBLIC_KEY_agregador',
-                        'desc' => $this->trans('LLave para autenticar y consumir los servicios de ePayco.', array(), 'Modules.Epayco_agregador.Admin'),
+                        'desc' => $this->trans('LLave para autenticar y consumir los servicios de Davipay.', array(), 'Modules.Epayco_agregador.Admin'),
                         'required' => true
                     ),
                     array(
                         'type' => 'text',
                         'label' => $this->trans('PRIVATE_KEY', array(), 'Modules.Epayco_agregador.Admin'),
                         'name' => 'PRIVATE_KEY_agregador',
-                        'desc' => $this->trans('LLave para autenticar y consumir los servicios de ePayco.', array(), 'Modules.Epayco_agregador.Admin'),
+                        'desc' => $this->trans('LLave para autenticar y consumir los servicios de Davipay.', array(), 'Modules.Epayco_agregador.Admin'),
                         'required' => true
                     ),
                     array(
@@ -348,7 +351,7 @@ class Epayco_agregador extends PaymentModule
                         'label' => $this->trans('Página de Confirmación', array(), 'Modules.Epayco_agregador.Admin'),
                         'name' => 'P_URL_CONFIRMATION_agregador',
                         'placeholder' => "http://tutienda.com/confirmacion",
-                        'desc' => $this->trans('Url de Confirmación donde ePayco confirma el pago.', array(), 'Modules.Epayco_agregador.Admin'),
+                        'desc' => $this->trans('Url de Confirmación donde Davipay confirma el pago.', array(), 'Modules.Epayco_agregador.Admin'),
                         'required' => true
                     ),
                     array(
@@ -371,19 +374,19 @@ class Epayco_agregador extends PaymentModule
                     ),
                     array(
                         'type' => 'radio',
-                        'label' => $this->trans('Tipo de checkout ePayco', array(), 'Modules.Epayco_agregador.Admin'),
+                        'label' => $this->trans('Tipo de checkout Davipay', array(), 'Modules.Epayco_agregador.Admin'),
                         'name' => "P_TYPE_CHECKOUT_agregador",
                         'is_bool' => true,
                         'values' => array(
                             array(
                                 'id' => 'onpage',
                                 'value' => true,
-                                'label' => $this->trans('OnPage Checkout (El usuario al pagar se queda en la tienda no hay redirección a ePayco)', array(), 'Modules.Epayco_agregador.Admin'),
+                                'label' => $this->trans('OnPage Checkout (El usuario al pagar se queda en la tienda no hay redirección a Davipay)', array(), 'Modules.Epayco_agregador.Admin'),
                             ),
                             array(
                                 'id' => 'standart',
                                 'value' => false,
-                                'label' => $this->trans('Estandar Checkout (El usuario al pagar es redireccionado a la pasarela de ePayco)', array(), 'Modules.Epayco_agregador.Admin'),
+                                'label' => $this->trans('Estandar Checkout (El usuario al pagar es redireccionado a la pasarela de Davipay)', array(), 'Modules.Epayco_agregador.Admin'),
                             )
                         ),
                     ),
@@ -487,7 +490,7 @@ class Epayco_agregador extends PaymentModule
                 $p_url_confirmation_agregador = Tools::getValue('P_URL_CONFIRMATION_agregador');
             }
             if (Tools::getValue('P_TITULO_agregador') == "") {
-                $p_titulo_agregador = "ePayco: Paga con Tarjeta de crédito/débito nacional e internacional, PSE, Daviplata, Nequi, Paypal, Efectivo, Safetypay y muchos más.";
+                $p_titulo_agregador = "Davipay: Paga con Tarjeta de crédito/débito nacional e internacional, PSE, Daviplata, Nequi, Paypal, Efectivo, Safetypay y muchos más.";
             } else {
                 $p_titulo_agregador = Tools::getValue('P_TITULO_agregador');
             }
@@ -637,12 +640,11 @@ class Epayco_agregador extends PaymentModule
             $lang = $this->context->language->language_code;
 
             if ($lang == "es") {
-                // Si el idioma es español, usa el botón en español
-                $url_button = _EPAYCO_MULTIMEDIA_URL_ . '/plugins-sdks/Boton-color-espanol.png';
+                $url_button = DAVIPAY_ROUTE_IMAGES_S3 . 'checkout/checkout-button/logo-checkout-payment-button-es.png';
+                $button_label = $this->l('Pagar con Davipay');
             } else {
-                // Si el idioma no es español, usa el botón en inglés
-                $url_button = _EPAYCO_MULTIMEDIA_URL_ . '/plugins-sdks/Boton-color-Ingles.png';
-                // Reasignar $lang a "en" (opcional, si es necesario en tu lógica)
+                $url_button = DAVIPAY_ROUTE_IMAGES_S3 . 'checkout/checkout-button/logo-checkout-payment-button-ing.png';
+                $button_label = $this->l('Pay with Davipay');
                 $lang = "en";
             }
             $tokenResponse = $this->epaycoBerarToken(trim($this->public_key_agregador),trim($this->private_key_agregador));
@@ -724,7 +726,9 @@ class Epayco_agregador extends PaymentModule
                     'this_path_bw' => $this->_path,
                     'checkout' => $checkout,
                     'status' => isset($sessionId) ? 'ok' : 'fail',
+                    'button_label' => $button_label,
                     'url_button' => $url_button,
+                    'url_logo_warning' => DAVIPAY_ROUTE_IMAGES_S3 . 'admin/credentials/logos/warning/logo-credentials-warning.png',
                     'errorMessage' => isset($processReturnFailMessage) ? $processReturnFailMessage : ''
                 )
             );
@@ -791,12 +795,15 @@ class Epayco_agregador extends PaymentModule
         if (!$this->checkCurrency($params['cart'])) {
             return;
         }
+        $logo_url_s3 = (defined('DAVIPAY_ROUTE_IMAGES_S3') && trim(DAVIPAY_ROUTE_IMAGES_S3) !== '')
+            ? DAVIPAY_ROUTE_IMAGES_S3 . 'checkout/payment-methods/logo-checkout-payment-methods.svg'
+            : CMS_ROUTE_IMAGES_S3 . 'checkout/payment-methods/logo-checkout-payment-methods.svg';
         $this->context->smarty->assign(array(
             "titulo" => $this->p_titulo_agregador,
-            "logo_url" => _EPAYCO_MULTIMEDIA_URL_ . '/plugins-sdks/paymentLogo.svg',
+            "logo_url" => $logo_url_s3,
         ));
         $modalOption = new PrestaShop\PrestaShop\Core\Payment\PaymentOption();
-        $modalOption->setCallToActionText($this->l('Pagar con ePayco'))
+        $modalOption->setCallToActionText($this->l('Pagar con Davipay'))
             ->setAction($this->context->link->getModuleLink($this->name, 'validation', array(), true))
             ->setAdditionalInformation($this->context->smarty->fetch('module:epayco_agregador/views/templates/hook/payment_onpage.tpl'));
         $payment_options = [
@@ -984,11 +991,11 @@ class Epayco_agregador extends PaymentModule
         $orderStatusPreName = $orderStatusPre[0]['name'];
 
         if (
-            $orderStatusPreName == "ePayco Pago Rechazado" ||
-            $orderStatusPreName == "ePayco Pago Cancelado" ||
-            $orderStatusPreName == "ePayco Pago Abandonado" ||
-            $orderStatusPreName == "ePayco Pago Expirado"  ||
-            $orderStatusPreName == "ePayco Pago Fallido"
+            $orderStatusPreName == "Davipay Pago Rechazado" ||
+            $orderStatusPreName == "Davipay Pago Cancelado" ||
+            $orderStatusPreName == "Davipay Pago Abandonado" ||
+            $orderStatusPreName == "Davipay Pago Expirado"  ||
+            $orderStatusPreName == "Davipay Pago Fallido"
         ) {
             $validacionOrderName = false;
         } else {
@@ -1017,7 +1024,7 @@ class Epayco_agregador extends PaymentModule
                             SELECT name FROM `' . _DB_PREFIX_ . 'order_state_lang`
                             WHERE `id_order_state` = ' . (int)$current_state);
                             $orderStatusName = $orderStatus[0]['name'];
-                            if($orderStatusName == "ePayco Pago Rechazado de Prueba" || $orderStatusName == "ePayco Pago Rechazado"){
+                            if($orderStatusName == "Davipay Pago Rechazado de Prueba" || $orderStatusName == "Davipay Pago Rechazado"){
                                // $this->RestoreStock($order, '-');
                             }
                         }
@@ -1041,7 +1048,7 @@ class Epayco_agregador extends PaymentModule
                         SELECT name FROM `' . _DB_PREFIX_ . 'order_state_lang`
                         WHERE `id_order_state` = ' . (int)$current_state);
                         $orderStatusName = $orderStatus[0]['name'];
-                    if($orderStatusName == "ePayco Pago Rechazado de Prueba" || $orderStatusName == "ePayco Pago Rechazado"){
+                    if($orderStatusName == "Davipay Pago Rechazado de Prueba" || $orderStatusName == "Davipay Pago Rechazado"){
                         $this->RestoreStock($order, '-');
                     }
                     $history->changeIdOrderState((int)$orderStatusEndId, $order, true);
@@ -1077,7 +1084,7 @@ class Epayco_agregador extends PaymentModule
                                 $this->RestoreStock($order, '-');
                             }
 
-                            if ($orderStatusPreName == "ePayco Esperando Pago" || $orderStatusPreName == "ePayco Pago Pendiente" || $orderStatusPreName == "ePayco Pago Pendiente de Prueba") {
+                            if ($orderStatusPreName == "Davipay Esperando Pago" || $orderStatusPreName == "Davipay Pago Pendiente" || $orderStatusPreName == "Davipay Pago Pendiente de Prueba") {
                                 $history->changeIdOrderState((int)Configuration::get($state), $order, true);
                                 $this->RestoreStock($order, '+');
                             }
@@ -1085,7 +1092,7 @@ class Epayco_agregador extends PaymentModule
                     }
                     $history->changeIdOrderState((int)Configuration::get($state), $order, true);
                     if (!$validacionOrderName) {
-                        if ($orderStatusPreName != "ePayco Pago Rechazado" || $orderStatusPreName != "ePayco Pago Cancelado" || $orderStatusPreName != "ePayco Pago Fallido") {
+                        if ($orderStatusPreName != "Davipay Pago Rechazado" || $orderStatusPreName != "Davipay Pago Cancelado" || $orderStatusPreName != "Davipay Pago Fallido") {
                             $keepOn = true;
                         }
 
@@ -1121,7 +1128,7 @@ class Epayco_agregador extends PaymentModule
         } else {
             $history = new OrderHistory();
             $history->id_order = (int)$order->id;
-            if ($orderStatusPreName != "ePayco Pago Fallido") {
+            if ($orderStatusPreName != "Davipay Pago Fallido") {
                 $this->RestoreStock($order, '+');
             }
             $history->changeIdOrderState((int)Configuration::get("PAYCO_OS_FAILED"), $order, true);

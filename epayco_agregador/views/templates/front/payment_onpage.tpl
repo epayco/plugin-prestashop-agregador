@@ -25,5 +25,5 @@
 *}
 
 <section>
-  <p>{l s='El onPage Checkout de ePayco, simplifica y asegura el procesamiento de pagos en línea. ' mod='epayco_agregador'}</p>
+  <p>{l s='El onPage Checkout de Davipay, simplifica y asegura el procesamiento de pagos en línea. ' mod='epayco_agregador'}</p>
 </section>

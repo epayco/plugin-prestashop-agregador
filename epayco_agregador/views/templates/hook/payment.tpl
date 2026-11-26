@@ -28,13 +28,13 @@
 		<p class="payment_module" id="epayco_agregador_payment_button">
 			{if $cart->getOrderTotal() < 2}
 				<a href="">
-					<img src="{$domain|cat:$payment_button|escape:'html':'UTF-8'}" alt="{l s='Pay with my payment module' mod='epayco_agregador'}" />
-					{l s='Minimum amount required in order to pay with my payment module:' mod='epayco_agregador'} {convertPrice price=2}
+					<img src="{constant('DAVIPAY_ROUTE_IMAGES_S3')}Imagotipo/checkoutSmallWhite_01_v1.svg" alt="Davipay" width="158" height="62" />
+					{l s='Monto mínimo requerido para pagar con Davipay:' mod='epayco_agregador'} {convertPrice price=2}
 				</a>
 			{else}
-				<a href="{$link->getModuleLink('epayco_agregador', 'redirect', array(), true)|escape:'htmlall':'UTF-8'}" title="{l s='Pay with my payment module' mod='epayco_agregador'}">
-					<img src="{$module_dir|escape:'htmlall':'UTF-8'}/logo.png" alt="{l s='Pay with my payment module' mod='epayco_agregador'}" width="32" height="32" />
-					{l s='Pay with my payment module' mod='epayco_agregador'}
+				<a href="{$link->getModuleLink('epayco_agregador', 'redirect', array(), true)|escape:'htmlall':'UTF-8'}" title="{l s='Pagar con Davipay' mod='epayco_agregador'}">
+					<img src="{constant('DAVIPAY_ROUTE_IMAGES_S3')}Imagotipo/checkoutSmallWhite_01_v1.svg" alt="Davipay" width="158" height="62" />
+					{l s='Pagar con Davipay' mod='epayco_agregador'}
 				</a>
 			{/if}
 		</p>
